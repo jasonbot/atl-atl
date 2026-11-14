@@ -13,8 +13,7 @@ typedef struct { uint32_t magic, ver; int32_t speed, mix, correct, oct, latch, f
 
 static int32_t p_speed = 20, p_mix = 100, p_correct = 100, p_oct, p_latch, p_fold = 1;
 static uint32_t held, last_key;
-static int target, dirty = 1;
-static uint32_t drawn_hash, drawn_ms;
+static int target;
 static int32_t gain_target, gain;
 static int16_t usb_in[2u * FW_BLOCK];
 
@@ -60,14 +59,12 @@ static void params_changed(void)
     atlatl_params(p_speed, p_mix, p_correct);
     atlatl_fold(p_fold);
     atlatl_target(target);
-    dirty = 1;
 }
 
 static void set_target(int midi)
 {
     target = midi;
     atlatl_target(target);
-    dirty = 1;
 }
 
 static void octave(int o)
@@ -82,7 +79,6 @@ static void octave(int o)
             if (held >> k & 1u) { last_key = (uint32_t)k; break; }
         set_target(k >= 0 ? key_note((uint32_t)k) : 0);
     }
-    dirty = 1;
 }
 
 static void save_cfg(void)
@@ -157,6 +153,48 @@ static void draw_all(int note, int cents, int voiced, int play)
     draw_text_box(10, 220, 220, &FONT_S, "EDIT: FOLD   SAVE: KEEP", C_GRAY, 0);
 }
 
+/* Only the lines whose value changed are redrawn. The full 240 x 240 fill happens once, at start. */
+static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
+{
+    static int init, s_target, s_note, s_cents, s_voiced, s_play;
+    static int s_speed, s_mix, s_correct, s_oct, s_latch, s_fold;
+    static uint32_t pitch_ms;
+    char n[8];
+    if (!init) {
+        draw_all(note, cents, voiced, play);
+        s_target = target; s_note = note; s_cents = cents; s_voiced = voiced; s_play = play;
+        s_speed = p_speed; s_mix = p_mix; s_correct = p_correct; s_oct = p_oct;
+        s_latch = p_latch; s_fold = p_fold; pitch_ms = now; init = 1;
+        return;
+    }
+    if (play != s_play) {
+        draw_text_box(176, 4, 56, &FONT_S, play == 2 ? "USB" : play ? "WAIT" : "NO USB",
+                      play == 2 ? C_ACCENT : C_GRAY, 1);
+        s_play = play;
+    }
+    if (target != s_target) {
+        if (target) { note_name(n, target); draw_text_box(10, 42, 220, &FONT_L, n, C_ACCENT, 1); }
+        else draw_text_box(10, 42, 220, &FONT_L, "---", C_DIM, 1);
+        s_target = target;
+    }
+    if (p_speed != s_speed) { draw_row(106, "SPEED", p_speed, 0); s_speed = p_speed; }
+    if (p_mix != s_mix) { draw_row(124, "MIX", p_mix, "%"); s_mix = p_mix; }
+    if (p_correct != s_correct) { draw_row(142, "CORRECT", p_correct, "%"); s_correct = p_correct; }
+    if (p_oct != s_oct) { draw_row(160, "OCT", p_oct, 0); s_oct = p_oct; }
+    if (p_latch != s_latch) {
+        draw_text_box(10, 184, 220, &FONT_S, p_latch ? "FX: LATCH" : "FX: HOLD", C_GRAY, 0);
+        s_latch = p_latch;
+    }
+    if (p_fold != s_fold) {
+        draw_text_box(10, 202, 220, &FONT_S, p_fold ? "AUTO OCTAVE" : "FIXED OCTAVE", C_GRAY, 0);
+        s_fold = p_fold;
+    }
+    if ((note != s_note || cents != s_cents || voiced != s_voiced) && now - pitch_ms >= 100u) {
+        draw_pitch(note, cents, voiced);
+        s_note = note; s_cents = cents; s_voiced = voiced; pitch_ms = now;
+    }
+}
+
 static void app_init(void)
 {
     load_cfg();
@@ -218,7 +256,7 @@ static void app_frame(const fw_input_t *in)
 
     if (in->pressed & FW_BIT(FW_BTN_OCT_DOWN)) octave(p_oct - 1);
     if (in->pressed & FW_BIT(FW_BTN_OCT_UP)) octave(p_oct + 1);
-    if (in->pressed & FW_BIT(FW_BTN_FX)) { p_latch = !p_latch; dirty = 1; }
+    if (in->pressed & FW_BIT(FW_BTN_FX)) p_latch = !p_latch;
     if (in->pressed & FW_BIT(FW_BTN_EDIT)) { p_fold = !p_fold; params_changed(); }
     if (in->pressed & FW_BIT(FW_BTN_SAVE)) save_cfg();
 
@@ -229,25 +267,10 @@ static void app_frame(const fw_input_t *in)
 
     {
         int f0, ratio, voiced, clarity, note = 0, cents = 0;
-        uint32_t hash;
         atlatl_status(&f0, &ratio, &voiced, &clarity);
         if (voiced)
             note = atlatl_note(&cents);
-        hash = (uint32_t)target * 31u + (uint32_t)f0 + (uint32_t)ratio * 7u + (uint32_t)voiced * 11u +
-               (uint32_t)p_speed * 13u + (uint32_t)p_mix * 17u + (uint32_t)p_correct * 19u +
-               (uint32_t)p_oct * 23u + (uint32_t)p_latch * 29u + (uint32_t)p_fold * 37u +
-               (uint32_t)play * 41u;
-        if (dirty) {
-            draw_all(note, cents, voiced, play);
-            dirty = 0;
-            drawn_hash = hash;
-            drawn_ms = in->ms;
-        } else if (in->ms - drawn_ms >= 100u && hash != drawn_hash) {
-            lcd_fill(0, 74, 240, 30, C_BLACK);
-            draw_pitch(note, cents, voiced);
-            drawn_hash = hash;
-            drawn_ms = in->ms;
-        }
+        draw_ui(note, cents, voiced, play, in->ms);
     }
 }
 
