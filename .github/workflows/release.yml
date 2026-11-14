@@ -103,6 +103,7 @@ jobs:
           rel="build/release-$VERSION"
           python3 tools/sim.py
           python3 tools/sim.py --test
+          python3 tests/sampler_test.py
           node web/test_web.mjs "$rel/atlatl-$VERSION.fwsc"
           python3 web/make_site.py --release "$rel"
 

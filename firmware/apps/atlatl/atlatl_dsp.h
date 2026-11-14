@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 void atlatl_init(uint32_t sr);
-void atlatl_target(int midi);                  /* 0: none */
+void atlatl_target(int midi);                  /* -1: none */
 void atlatl_params(int speed, int mix, int correct);   /* 0..100 */
 void atlatl_fold(int fold);
 void atlatl_process(const int16_t *in, int32_t *out, uint32_t n);   /* Q15 stereo */

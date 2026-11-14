@@ -4,7 +4,7 @@
  * GPL-3.0). Mono analysis; the wet signal is duplicated to both outputs.
  *
  *   at_init(&s, sr)                   zeros, the Hann window
- *   at_set_target(&s, midi)           0: none (pass through)
+ *   at_set_target(&s, midi)           -1: none (pass through); 0..127: target
  *   at_set_params(&s, speed, mix, correct)   0..1 each
  *   at_process(&s, in, out, n)        n stereo Q15 frames, in and out may be the same buffer
  *

@@ -70,6 +70,7 @@ jobs:
           python3 tools/sim.py
           python3 tools/sim.py --app demo
           python3 tools/sim.py --test
+          python3 tests/sampler_test.py
 
       - name: Installer protocol and site
         run: |

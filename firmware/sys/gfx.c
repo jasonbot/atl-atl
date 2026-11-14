@@ -16,7 +16,7 @@ typedef struct {               /* proportional, see tools/gen_font.py */
 } felucca_font_t;
 #include "felucca_font.h"
 
-#define CV_MAX (240u * 124u)      /* the graph strip is 240 x 124 */
+#define CV_MAX (240u * 64u)       /* text rows and the graph strip; keeps the pool for the 3 s sample */
 static uint16_t cv_px[CV_MAX] FW_POOL;
 static uint32_t cv_w, cv_h;
 static int32_t cv_oy;            /* y offset for graph drawing */

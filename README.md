@@ -4,7 +4,9 @@
 
 Atl-Atl is its own firmware. It turns the FM-1 into a class-compliant USB audio device: the computer plays into it,
 the FM-1 tunes that audio to the note you hold on its keyboard, and the result comes out of the speaker or
-headphones. The four knobs shape the effect; the screen shows the held note, the detected pitch and the settings.
+headphones. The four knobs shape the effect, **SELECT** sets the tempo, and the screen shows the held note, the
+detected pitch, the sample and the settings. A three-second sampler records the USB input while the tuner keeps
+playing; its loop snaps to the note length nearest the sample at the current tempo.
 
 There is **one app**: ATLTUNER. No module picker, no OPTIONS page, no BLE-MIDI, no packaged synth. The firmware is a
 single-purpose build on the FM1_AudioBase platform, with its hardware-tested USB audio sink. The tuner's DSP and UI
@@ -36,6 +38,13 @@ FM-1 output ──► USB audio IN: the computer can record what the speaker pla
 - **Key-targeted tuning**: a held key is the target note. The input is analyzed for its fundamental, the target is
   folded to the octave nearest the singer, and a phase-synchronous granular shifter moves the input to the target.
   Releasing the keys returns to the dry signal unless **FX** latches the note.
+- **Three-second sampler**: hold **REC** to capture the USB input (mono, at the codec rate) while the live tuner
+  keeps playing. **PLAY** plays the sample once; **SEQ** makes it loop. The loop length is the note length nearest
+  the sample's own length at the current tempo (whole, half, quarter, eighth, sixteenth, and thirds/ninths), so a
+  sample is clipped or followed by silence to land on the note grid. The sample is mixed with the live input when
+  both play.
+- **Tempo and mask**: **SELECT** sets 30–300 BPM; USB-MIDI clock overrides it while clocks arrive. **ARP** masks
+  the output so sound only passes while a key is held. **FX** latches the target, which makes the mask always on.
 - **The four knobs** set speed, mix, correction and octave. **EDIT** switches auto-octave folding; **SAVE** stores
   the settings.
 - **No module system**: the app starts directly; HOME does not open a picker, and there is no OPTIONS page.
@@ -79,11 +88,18 @@ workflow runs the host simulator and the installer tests before it creates the r
 | **KNOB3** | CORRECT: how much of the target ratio is applied |
 | **KNOB4** | OCT: shift the key range, −2 … +2 |
 | **OCT− / OCT+** | shift the key range |
-| **FX** | latch the last target after the keys are released |
+| **REC** | hold to record the USB input; release to stop. Auto-stops at three seconds |
+| **PLAY** | play the sample once, or stop playback; with LOOP, start or stop the loop |
+| **SEQ** | ONCE / LOOP for sample playback |
+| **ARP** | MASK: pass sound only while a key is held |
+| **FX** | latch the last target after the keys are released; with MASK, the output stays on |
 | **EDIT** | AUTO vs FIXED octave folding |
-| **SAVE** | store speed, mix, correction, octave, latch and fold |
+| **SAVE** | store speed, mix, correction, octave, latch, fold, BPM, loop and mask |
+| **SELECT** | BPM, 30–300; USB-MIDI clock takes over while clocks arrive |
 
-The tuner owns the keys and the four knobs directly. MIDI note and CC 74/71/73/72 messages do the same from USB.
+The tuner owns the keys and the four knobs directly. USB-MIDI note on/off is a second keyboard: held MIDI notes
+are tracked like the keys, a release falls back to the next held note, and both sources drive the target and the ARP
+mask. CC 74/71/73/72 do the same from USB.
 
 ## Building
 
@@ -109,6 +125,7 @@ Host simulator:
 
 ```sh
 python3 tools/sim.py                         # host/atlatl.sim: 220 Hz in, C4 held
+python3 tests/sampler_test.py                # MIDI held keys, note 0, record trim, playback
 ```
 
 ## Sources and lineage

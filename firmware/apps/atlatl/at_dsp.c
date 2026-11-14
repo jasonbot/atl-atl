@@ -34,6 +34,7 @@ void at_init(at_state *s, uint32_t sr)
 {
     uint32_t i;
     memset(s, 0, sizeof *s);
+    s->target = -1;                                    /* no target: pass through */
     s->sr = sr;
     s->nf[0] = 8.1757989156f;                          /* C-1; a semitone is 2^(1/12) */
     for (i = 1; i < 128; i++)
@@ -63,7 +64,7 @@ void at_reset(at_state *s)
     s->fold = fold;
 }
 
-void at_set_target(at_state *s, int midi) { s->target = midi < 0 || midi > 127 ? 0 : midi; }
+void at_set_target(at_state *s, int midi) { s->target = midi >= 0 && midi <= 127 ? midi : -1; }
 
 void at_set_fold(at_state *s, int fold) { s->fold = fold != 0; }
 
@@ -167,7 +168,7 @@ void at_process(at_state *s, const int32_t *in, int32_t *out, uint32_t n)
     if ((s->blocks & 1u) == 0u)
         at_detect(s);
     s->blocks++;
-    if (s->target && s->voiced) {
+    if (s->target >= 0 && s->voiced) {
         float ft = at_note_freq(s, s->target);
         if (s->fold) {
             while (ft > s->f0 * 1.41421356f) ft *= 0.5f;   /* the octave nearest the singer */
