@@ -1,4 +1,4 @@
-# Building FM1_AudioBase
+# Building Atl-Atl: The Atltuner
 
 ## What you need
 
@@ -13,12 +13,12 @@ SDK checkout instead. `tools/build.py` checks their SHA-256.
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 sh tools/get_toolchain.sh
-PYTHON=.venv/bin/python ./build.sh                 # build/audiobase.fwsc   (48 kHz)
+PYTHON=.venv/bin/python ./build.sh                 # build/atlatl.fwsc   (48 kHz)
 PYTHON=.venv/bin/python ./build.sh --app demo      # build/demo.fwsc        (the small demo synth)
 ```
 
-Options: `--app NAME` (`firmware/apps/NAME`, default `audiobase`), `--fs 48|44` (the codec clock,
-`firmware/sys/fw_rate.h`: 48 kHz by default; 44 is for comparison, and its USB audio runs at 44.1 kHz), `--name NAME` (the package's file name), `--release X.Y` (identity `FM-1_9XY`, version
+Options: `--app NAME` (`firmware/apps/NAME`, default `atlatl`), `--fs 48|44` (the codec clock,
+`firmware/sys/fw_rate.h`: 48 kHz by default; 44 is for comparison, and its USB audio runs at 44.1 kHz), `--name NAME` (the package's file name), `--release X.Y` (identity `FM-1_922`, version
 `X.Y` on the splash). Environment: `FW_UART=0` (no TRS MIDI), `FW_UBOOT_COMBO=0` (no OCT−+OCT+ 5 s), `FELUCCA_OTA_DRYRUN=1`
 (an update runs to the end but writes nothing), `JOBS=N` (parallel C++ compiles). C++ is rebuilt incrementally
 (`build/cxx/APP/`).
@@ -31,7 +31,7 @@ routines, no `.init_array`, and no register access outside `firmware/hal/`.
 ```bash
 pip install mido python-rtmidi
 python3 tools/fm1_install.py --info               # identity of the connected FM-1
-python3 tools/fm1_install.py build/audiobase.fwsc
+python3 tools/fm1_install.py build/atlatl.fwsc
 ```
 
 Or from the browser: `python3 web/make_site.py` makes the installer site from the local builds in `build/site`;
@@ -44,11 +44,11 @@ The app's code runs on the host against a stub HAL, built with ASan and UBSan (a
 WAV, the screen to PNG. It says nothing about timing or CPU load: that is measured on the device only.
 
 ```bash
-.venv/bin/python tools/sim.py                      # host/audiobase.sim -> build/host/out/*.png, audiobase.wav
+.venv/bin/python tools/sim.py                      # host/atlatl.sim -> build/host/out/*.png, atlatl.wav
 .venv/bin/python tools/sim.py --app demo
 .venv/bin/python tools/sim.py --test               # storage test (A/B slots, an interrupted write)
-node web/test_web.mjs build/audiobase.fwsc         # the installer's protocol against an emulated FM-1
-sh tests/update_tests.sh build/audiobase.fwsc build/app.bin   # OTA and loader (STOCK_V15 / STOCK_V16: M-VAVE's files)
+node web/test_web.mjs build/atlatl.fwsc         # the installer's protocol against an emulated FM-1
+sh tests/update_tests.sh build/atlatl.fwsc build/app.bin   # OTA and loader (STOCK_V15 / STOCK_V16: M-VAVE's files)
 ```
 
 A script is a list of lines: `frames N`, `key K down|up`, `btn PLAY down|up`, `knob K1 3`, `master 800`,
@@ -65,7 +65,7 @@ the USB host): the computer plays a file to the FM-1's USB audio output and reco
 # tone.raw: s16le stereo at 48 kHz, no header
 FM1_AUDIO_FRAME_NS=20800 FM1_USB_PLAY=tone.raw FM1_USB_WAV=rec.raw FM1_USB_RATE=48000 \
   FM1_BENCH_WAV=out.raw FM1_BENCH_PANEL=panel.ppm FM1_BENCH_KEYS='0:pot:1023,2500:pot:512,3000:GLO,3100:GLO^' \
-  ../FM-1Ception/target/release/fm1-live --fwsc build/audiobase.fwsc --usb --bench 5000
+  ../FM-1Ception/target/release/fm1-live --fwsc build/atlatl.fwsc --usb --bench 5000
 ```
 
 `out.raw` is the codec's output (the emulator reads its words >> 8: 6 dB under the USB stream), `rec.raw` what the
@@ -74,12 +74,12 @@ computer recorded, `panel.ppm` the panel at the end. `FM1_BENCH_KEYS`: `MS:pot:N
 
 ## Releasing
 
-A release is a tag `vX.Y` (one digit each: the package identity is `FM-1_9XY`).
+A release is a tag `vX.Y` (one digit each: the package identity is `FM-1_922`).
 
 1. Add `docs/releases/X.Y.md` (the release notes) and commit.
 2. `git tag v0.1 && git push origin v0.1`.
 3. `.github/workflows/release.yml` builds the package (`tools/release.py`), runs the simulator and the installer
-   test, and creates the GitHub release with `audiobase-X.Y.fwsc`, `SHA256SUMS` and the licences.
+   test, and creates the GitHub release with `atlatl-X.Y.fwsc`, `SHA256SUMS` and the licences.
 4. It then starts `.github/workflows/pages.yml`, which takes the package from the release, checks it against
    `SHA256SUMS`, makes the site (`web/make_site.py --release`) and deploys it to GitHub Pages.
 5. From then on every push to `main` that changes `web/` publishes the site again, with the latest release's

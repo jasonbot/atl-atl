@@ -45,7 +45,7 @@ STOCK_SHA256 = {
 # a Felucca-family loader (an install cut off) writes only its app area: it cannot finish these
 STOCK_NEEDS_OFFICIAL_LOADER = {"FM-1_016"}
 FAMILY_LOADER = re.compile(r"ota-FM-1_[1-9]\d\d", re.I)   # our loaders; ota-FM-1_0NN is stock's
-PORT_RE = re.compile(r"fm-1|fjord|felucca|fmini|update|ota|composite|sinco|usb-midi", re.I)   # never probe other gear (macOS may keep a port's old name)
+PORT_RE = re.compile(r"fm-1|atl-?atl|atltuner|fjord|felucca|fmini|update|ota|composite|sinco|usb-midi", re.I)   # never probe other gear (macOS may keep a port's old name)
 
 # seconds; the tests shorten them
 DELAY = {"open": 0.3, "start": 2.0, "reply": 0.01, "loader": 3.0, "reboot": 3.0, "retry": 1.0,

@@ -1,6 +1,6 @@
 # Developing on the platform
 
-FM1_AudioBase is one app on a small firmware platform for the FM-1 (JieLi AC79, pi32v2 core), cut down from
+Atl-Atl is one app on a small firmware platform for the FM-1 (JieLi AC79, pi32v2 core), cut down from
 [ORBIT](https://github.com/dspaudio/orbit) (ORBIT ← SLOOP ← Felucca) for GATOR, then carried by MOOD_FM1. The
 hardware-proven parts are kept: the HAL, the update loader, USB-MIDI, USB audio, OTA, flash storage and the `.fwsc`
 packer. Everything else is a thin API for apps.
@@ -97,7 +97,7 @@ at most 240×124, so a screen is drawn in strips. Fonts: `FONT_S` (16 px), `FONT
 - **float only outside `app.c`.** The unity build (`fw.c` and `app.c`) is built without the FPU, as ORBIT is, where
   `float` would be slow software emulation (the build fails if any is linked). The app's other `*.c` and its `*.cc`
   are built with the single-precision FPU (`-mcpu=r3 -mfprev1`, as the AC79 SDK); they reach `app.c` with integers
-  and pointers only (`apps/audiobase/ab_fw.h`: functions `app.c` defines for them, not `static`). The FPU has no `double`. Static constructors do not run: create such objects with
+  and pointers only (`apps/atlatl/ab_fw.h`: functions `app.c` defines for them, not `static`). The FPU has no `double`. Static constructors do not run: create such objects with
   placement new in `app_init` (the build fails on `.init_array`).
 - **Do not block `app_frame` for more than a few seconds:** the watchdog (~8 s) restarts the device.
 - No `malloc` and no libc: static buffers only. Mark large buffers `FW_POOL` (336 KB, ~58 KB of it the canvas; the
@@ -111,9 +111,9 @@ at most 240×124, so a screen is drawn in strips. Fonts: `FONT_S` (16 px), `FONT
 - At start the VDC14 / SYSVDD supplies are raised to M-VAVE's stock levels (`fm1_supplies_stock`, from SLOOP 2.7 /
   X0X 1.0.9): at the loader's levels some units misread flash and SRAM.
 
-The package format, the loader and the OTA protocol are those of SLOOP / ORBIT, so FM1_AudioBase installs and is
+The package format, the loader and the OTA protocol are those of SLOOP / ORBIT, so Atl-Atl installs and is
 replaced the same way they are. The USB descriptors stay Felucca's (VID:PID 1209:0001); an app names the device with
-`FW_USB_PRODUCT` (build.txt), which must contain "FM-1" so that the installers find it.
+`FW_USB_PRODUCT` (build.txt); the installers match the FM-1 and Atl-Atl port names.
 
 ## USB audio
 

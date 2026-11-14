@@ -56,7 +56,7 @@ CFPUFLAGS = ["-mcpu=r3", "-mfprev1", "-O2", "-std=gnu99", "-fno-math-errno", "-f
 CFPUFLAGS = ["-mcpu=r3", "-mfprev1", "-O2", "-std=gnu99", "-fno-math-errno", "-fno-builtin-printf",
              "-ffunction-sections", "-fdata-sections", "-Wall", "-Wno-unused-function", "-Wframe-larger-than=1024",
              "-Ifirmware/sys"]
-APP = os.environ.get("FW_APP", "audiobase")   # firmware/apps/APP: --app
+APP = os.environ.get("FW_APP", "atlatl")      # firmware/apps/APP: --app
 FS48 = os.environ.get("FW_FS48", "1") == "1"   # the 48 kHz codec clock, the default (firmware/sys/fw_rate.h); --fs 44
 CXX_TARGET_ONLY = ["firmware/cxx/runtime.cc"]
 LIBS = ["libm.a", "libcompiler_rt.a"]
@@ -70,7 +70,7 @@ SDK_SHA256 = {
     "cfg/eq_cfg_hw.bin": "41167491bffed4651750719c973d2758adeb9021a5670d02d6a53c85ed80ea7d",
 }
 
-PRODUCT = "FM-1_900"                # package identity; release builds are FM-1_9XY
+PRODUCT = "FM-1_922"                # Atl-Atl's identity, every release (FM-1_9NN for the installers)
 VERSION = None                      # FW_VERSION for release builds (default: firmware/sys/fw.c)
 
 
@@ -476,7 +476,8 @@ def build_tag():
 def main():
     global PRODUCT, VERSION
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_9XY, version string X.Y")
+    ap.add_argument("--release", metavar="X.Y", help="release build: version string X.Y (the identity stays FM-1_922)")
+    ap.add_argument("--identity", help="package identity (FM-1_9NN) in place of Atl-Atl's FM-1_922")
     ap.add_argument("--sdk", type=Path, help="JieLi AC79 SDK checkout (default: $AC79_SDK, else tools/sdk)")
     ap.add_argument("--app", default=APP, help=f"firmware/apps/APP to build (default: {APP})")
     ap.add_argument("--fs", choices=("44", "48"), default="48" if FS48 else "44",
@@ -486,11 +487,14 @@ def main():
     set_app(a.app)
     set_fs(a.fs)
     name = f"{a.name or build_tag()}.fwsc"
-    if a.release:                   # one digit each: the identity has room for two
+    if a.identity:
+        if not re.fullmatch(r"FM-1_9\d\d", a.identity):
+            raise SystemExit(f"--identity {a.identity}: FM-1_9NN")
+        PRODUCT = a.identity
+    if a.release:                   # one digit each; the package text, not the identity
         m = re.fullmatch(r"(\d)\.(\d)(-[A-Za-z0-9]+)?", a.release)
         if not m:
             raise SystemExit(f"--release {a.release}: use X.Y or X.Y-suffix, one digit each")
-        PRODUCT = "FM-1_9" + m[1] + m[2]
         VERSION = a.release.upper()
     fm1pkg_make.SDK = a.sdk
     for rel, sha in SDK_SHA256.items():          # fail early without the SDK

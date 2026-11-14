@@ -1,97 +1,144 @@
-<h1 align="center">FM1_AudioBase</h1>
+<h1 align="center">Atl-Atl: The Atltuner</h1>
 
-<p align="center">
-  The M-VAVE FM-1 as a USB audio interface: the base FM-1 firmware to fork from<br>
-  <a href="https://stevexfer.github.io/FM1_AudioBase/"><b>Web installer</b></a> ·
-  <a href="https://github.com/stevexfer/FM1_AudioBase/releases">Releases</a> ·
-  <a href="BUILDING.md">Building</a> ·
-  <a href="docs/DEVELOPING.md">Developing</a>
-</p>
+<p align="center"><b>The M-VAVE FM-1 as a USB audio sink and a key-targeted autotuner.</b></p>
 
-FM1_AudioBase does one thing: what the computer plays reaches the FM-1's outputs, MASTER sets the volume, and GLO
-shows a visualizer of the sound. It is a clean, small firmware to start new FM-1 firmware from: an app's DSP goes
-between the USB audio and the volume.
+Atl-Atl is its own firmware. It turns the FM-1 into a class-compliant USB audio device: the computer plays into it,
+the FM-1 tunes that audio to the note you hold on its keyboard, and the result comes out of the speaker or
+headphones. The four knobs shape the effect; the screen shows the held note, the detected pitch and the settings.
 
-- **USB audio output "FM-1"** (the computer plays to it): 48 kHz, 16-bit stereo, resampled to the codec's clock.
-- **USB audio input "FM-1"** (the computer records it): what the FM-1 plays, after the volume, 48 kHz 16-bit stereo,
-  the codec's own samples.
-- **MASTER** is the volume of both: off at the bottom, 0 dB at the top, ramped per block (no zipper noise).
-- **The screen:** the two streams' state, L/R peak meters, the volume in dB, CPU, USB and MIDI activity. The PLAY
-  LED is lit while the computer plays to the FM-1, REC while it records from it.
-- **GLO** toggles the visualizer (the waveform, fed back on itself; MOOD_FM1's), GLO lit while it shows.
-- USB-MIDI and TRS MIDI in are kept running (drained), so the installers always reach the FM-1.
+There is **one app**: ATLTUNER. No module picker, no OPTIONS page, no BLE-MIDI, no packaged synth. The firmware is a
+single-purpose build on the FM1_AudioBase platform, with its hardware-tested USB audio sink. The tuner's DSP and UI
+were developed first in an fm1-dock module and carried over. It is **not** fm1-dock: Atl-Atl has its own name, its own
+identity (`FM-1_922`) and its own UI. The upstream authors are credited below; nothing here is endorsed by them.
 
-Tested on an FM-1: both USB audio streams, MASTER and the visualizer. 
+Source: [github.com/jasonbot/atl-atl](https://github.com/jasonbot/atl-atl).
 
-PLEASE NOTE: THIS IS VERY EARLY DEVELOPMENT, 0.1 means 0.1 :).  
-I welcome pull requests that improve while keeping the premise simple!
+> **Status:** builds, passes the host simulator, and its simulator output has been measured (220 Hz in, C4 held,
+> 261.3 Hz out). The USB sink is FM1_AudioBase's hardware-tested path, but this exact build has not been run on an
+> FM-1 here. Treat the first install as a bench test.
 
-> [!WARNING]
-> **Installing custom firmware is at your own risk.** FM1_AudioBase is unofficial firmware, provided as is, without
-> any warranty (GPL-3.0 sections 15 and 16). It is not made, endorsed or supported by M-VAVE. A failed or interrupted
-> install can leave the FM-1 unable to start until it is recovered with a USB tool. You can return to the official
-> firmware at any time.
+## What it does
+
+```
+computer / DAW
+   │  USB audio OUT: 48 kHz, 16-bit stereo, isochronous adaptive
+   ▼
+jitter ring → cubic resampler (48,000 → 48,076.9 Hz) → ATLTUNER → MASTER → I2S DAC
+                                                          ▲
+                                      held key = target note, four knobs = parameters
+
+FM-1 output ──► USB audio IN: the computer can record what the speaker plays
+```
+
+- **USB audio sink**: the FM-1 appears as a USB audio device. FM1_AudioBase's `usb_play_*` path receives the host's
+  stream on EP3, buffers it and resamples it to the codec's own clock. The ring is primed at a fixed latency,
+  re-primed after a stall, and the ratio follows a smoothed fill, so packet jitter does not modulate the pitch.
+- **Key-targeted tuning**: a held key is the target note. The input is analyzed for its fundamental, the target is
+  folded to the octave nearest the singer, and a phase-synchronous granular shifter moves the input to the target.
+  Releasing the keys returns to the dry signal unless **FX** latches the note.
+- **The four knobs** set speed, mix, correction and octave. **EDIT** switches auto-octave folding; **SAVE** stores
+  the settings.
+- **No module system**: the app starts directly; HOME does not open a picker, and there is no OPTIONS page.
 
 ## Install
 
-1. Charge the FM-1 and plug it straight into the computer with a data cable. Close apps that use MIDI.
-2. Open the **[web installer](https://stevexfer.github.io/FM1_AudioBase/)** in Chrome or Edge (Safari and Firefox have
-   no Web MIDI with SysEx).
-3. Press **Install**. Leave the cable alone until it says Done.
+Build it with the JieLi toolchain (see [BUILDING](#building)), then:
 
-From the command line, with a package from [Releases](https://github.com/stevexfer/FM1_AudioBase/releases) or your own
-build:
-
-```bash
-pip install mido python-rtmidi
-python3 tools/fm1_install.py build/audiobase.fwsc
+```sh
+# from the stock firmware or any FM-1 firmware that answers the installer
+python3 tools/fm1_install.py build/atlatl.fwsc
 ```
 
-**Back to the official firmware:** download FM-1 V15 from [m-vave.com/download](https://www.m-vave.com/download) and
-write it with the web installer's "Back to the official firmware". FM1_AudioBase uses the Felucca platform's update
-loader, so other Felucca-platform firmware (SLOOP, ORBIT, ChoralRoot, GATOR, MOOD_FM1, AMB-1) installs over it the
-usual way.
+It starts **ATLTUNER** directly. Play audio from the computer; the FM-1 reports itself as
+`Atl-Atl: The Atltuner` over USB.
 
-**If something goes wrong:** an interrupted write resumes when you press Install again. After two failed boots in a
-row the FM-1 opens USB RESCUE by itself (or hold OCT− at power-on), and the installer works there too. An FM-1 that
-does not start at all can be recovered with [MvaveFM1Unbricker](https://github.com/Quixotic7/MvaveFM1Unbricker).
+To return to M-VAVE's firmware, use the official V15 package and its installer. Atl-Atl keeps the Felucca update
+loader: an interrupted install can be resumed, and two failed boots open the USB rescue (or hold **OCT−** at
+power-on).
 
-## Build
+### Releases
 
-See **[BUILDING.md](BUILDING.md)**: the toolchain, `./build.sh`, the host simulator and tests, the emulator, and how
-a release is made. [docs/DEVELOPING.md](docs/DEVELOPING.md) describes the platform and its app API.
+GitHub releases are built and published by `.github/workflows/release.yml` when a version tag is pushed. The release
+contains `atlatl-X.Y.fwsc`, `SHA256SUMS` and the licences:
 
-## Credits
+```sh
+git tag -a v0.1 -m "Atl-Atl 0.1"
+git push origin v0.1
+```
 
-FM1_AudioBase is a fork of MOOD_FM1, the FM-1 port of MOOD, which was built on
-[GATOR](https://github.com/npi3pak/fm1-gator) by npi3pak. It stands on the work of:
+A manual run of the **release** workflow builds the package as an artifact without publishing a release. The
+workflow runs the host simulator and the installer tests before it creates the release.
 
-- **Leo Kuroshita, Hügelton Instruments**: [Felucca](https://github.com/hugelton/Felucca), the FM-1 platform: HAL,
-  update loader, USB-MIDI, USB audio, OTA, storage and installers (GPL-3.0).
-- **npi3pak**: [GATOR](https://github.com/npi3pak/fm1-gator), the platform cut down and its release tooling.
-- **dspaudio**: [ORBIT](https://github.com/dspaudio/orbit), the platform GATOR was cut down from.
-- **isod89**: [SLOOP](https://github.com/isod89/sloop-fm1), the web install protocol and the stock supply levels.
-- **Quixotic7**: [ChoralRoot](https://github.com/Quixotic7/ChoralRootFM1), the audio interrupt fix and the release
-  layout; [MvaveFM1Unbricker](https://github.com/Quixotic7/MvaveFM1Unbricker).
-- **Charles Vestal**: [AMB-1](https://github.com/charlesvestal/fm1-amb), which showed the FPU in use on the FM-1.
-- **Dimitar Toshkov Zhekov**: the Terminus font (SIL OFL 1.1).
-- **JieLi Technology**: three AC79 SDK files in every package (Apache-2.0).
+## Controls
 
-## License
+| Control | What it does |
+| --- | --- |
+| **Keys** | hold a key: its note is the target. The octave is folded to the one nearest the input; last/highest held key wins |
+| **KNOB1** | SPEED: 0 is instant hard tune, 100 is a slow glide |
+| **KNOB2** | MIX: dry / tuned |
+| **KNOB3** | CORRECT: how much of the target ratio is applied |
+| **KNOB4** | OCT: shift the key range, −2 … +2 |
+| **OCT− / OCT+** | shift the key range |
+| **FX** | latch the last target after the keys are released |
+| **EDIT** | AUTO vs FIXED octave folding |
+| **SAVE** | store speed, mix, correction, octave, latch and fold |
 
-FM1_AudioBase is free software under the [GNU General Public License v3.0 only](LICENSE), provided without any
-warranty. The parts it is built from keep their licences and copyright notices:
+The tuner owns the keys and the four knobs directly. MIDI note and CC 74/71/73/72 messages do the same from USB.
 
-| Part | Author | Licence | Text |
-|---|---|---|---|
-| FM1_AudioBase, MOOD_FM1's visualizer, GATOR (the app, web installer, release tooling) | stevexfer; npi3pak | GPL-3.0-only | [LICENSE](LICENSE) |
-| Felucca platform: HAL, update loader, USB-MIDI, USB audio, OTA, storage, tools (through ORBIT and SLOOP, modified) | Leo Kuroshita, Hügelton Instruments | GPL-3.0-only | [LICENSE](LICENSE) |
-| Web install protocol `fm1ota.js`, `fm1pkg.js` (from SLOOP 2.7; `fm1ota.js` finds the loader's macOS port names too) | Leo Kuroshita, Hügelton Instruments; isod89 | GPL-3.0-only | [LICENSE](LICENSE) |
-| Terminus font (rasterised into the firmware) | Dimitar Toshkov Zhekov | SIL OFL 1.1 | [LICENSES/OFL-Terminus.txt](LICENSES/OFL-Terminus.txt) |
-| Three AC79 SDK files in every package (`tools/sdk`, unmodified) | JieLi Technology | Apache-2.0 | [LICENSES/Apache-2.0-JieLi-SDK.txt](LICENSES/Apache-2.0-JieLi-SDK.txt) |
+## Building
 
-Every release and the web installer carry these licence texts next to the packages, and each release's complete
-source is its tag in this repository. [LICENSING.md](LICENSING.md) has the details.
+Linux x86-64 (or Docker), Python 3 with Pillow, and the JieLi Linux toolchain. The three AC79 SDK files are in
+`tools/sdk/`, so a full SDK checkout is optional:
 
-"M-VAVE" and "FM-1" are trademarks of their respective owners. FM1_AudioBase is not affiliated with, endorsed by or
-supported by them.
+```sh
+pip3 install -r requirements.txt
+tools/get_toolchain.sh                       # to ~/.jieli/toolchain
+./build.sh                                   # -> build/atlatl.fwsc
+```
+
+`--fs 44` builds the 44.1 kHz codec family instead of the default 48 kHz. The app is
+`firmware/apps/atlatl/`; its FPU DSP is `dsp.c` + `at_dsp.c`, and `app.c` calls it through integer-only bridges.
+
+Outputs:
+
+- `build/atlatl.fwsc` — the installable package, identity `FM-1_922`
+- `build/app.bin` — the app image
+- `build/host/out/` — the simulator's WAV and PNG
+
+Host simulator:
+
+```sh
+python3 tools/sim.py                         # host/atlatl.sim: 220 Hz in, C4 held
+```
+
+## Sources and lineage
+
+Atl-Atl stands on work by other people. The parts it uses keep their licences and notices; see
+[LICENSING.md](LICENSING.md) for the file-by-file record.
+
+- **FM1_AudioBase** by stevexfer: the single-app Felucca platform, the hardware-tested USB audio sink and the
+  simulator/release tooling. Atl-Atl is a fork of it. [github.com/stevexfer/FM1_AudioBase](https://github.com/stevexfer/FM1_AudioBase)
+- **fm1-dock** by Joakim Eriksson: the module prototype where the ATLTUNER DSP and UI were developed. The DSP was
+  carried over; the module host was not.
+- **Felucca** by Leo Kuroshita / Hügelton Instruments, through SLOOP by isod89 and Dinghy by zvenson: the FM-1
+  platform, HAL, update loader and storage (GPL-3.0).
+- **Autotalent / TalentedHack** by Tom Baran and Jeremy Salwen: the phase-synchronous shifter and key-as-target
+  idea the DSP follows (GPL-3.0).
+- **JieLi Technology**: three AC79 SDK files in `tools/sdk/`, Apache-2.0. **M-VAVE**: the FM-1 hardware. Atl-Atl is
+  unofficial and not affiliated with or endorsed by M-VAVE or any upstream author.
+
+## Limits
+
+- **FM-1 only.** The AudioBase platform is the FM-1's; the SMK-37 port from fm1-dock is not in this tree.
+- **Mono target, one note.** The detector follows a single fundamental; a full mix is not a reliable input. Solo
+  voice or a monophonic instrument is the intended source.
+- **No analog microphone input.** The FM-1 has no audio ADC; the input must arrive over USB.
+- **Latency**: about 36 ms device-side (9.4 ms ring + 21.3 ms shifter at 48 kHz + 5.3 ms block), plus the
+  computer's USB buffer. It is an effect box, not a zero-latency monitor.
+- The PC's volume slider is not wired to a UAC Feature Unit; use the FM-1's **MASTER**.
+- 44.1 kHz is available with `--fs 44`; 48 kHz is the tested default.
+
+## Licence
+
+GPL-3.0-only. You may change and share it; give whoever gets your firmware its source too. The third-party parts
+and their notices are in [LICENSING.md](LICENSING.md) and `LICENSES/`.

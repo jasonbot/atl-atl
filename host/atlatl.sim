@@ -1,0 +1,13 @@
+# Atl-Atl: a 220 Hz computer tone, C4 held; the tuner should play C4; then the key is released and the dry tone returns
+master 1023
+frames 20
+usbtone 220 -6
+usbrec 2
+key 7 down
+frames 120
+screen build/host/out/atlatl.ppm
+wav build/host/out/atlatl.wav
+leds
+key 7 up
+frames 80
+wav build/host/out/atlatl_dry.wav

@@ -19,7 +19,7 @@ export const OUR_LOADER = (id) => /^ota-FM-1_9\d\d$/i.test(id.text);
 // CLIPPER ("Clipper", its sister firmware), under a firmware named after itself ("SLOOP"), the update loaders, and
 // the names Windows / macOS give the stock firmware. macOS keeps the first name it saw for a USB ID: the update
 // loader (1209:0002) can come up as another firmware's loader, "FMini-1 Update" (as tools/fm1_install.py)
-export const FM1_PORT = /fm-1|fjord|felucca|fmini|update|sloop|clipper|ota|composite|sinco|usb-midi/i;
+export const FM1_PORT = /fm-1|atl-?atl|atltuner|fjord|felucca|fmini|update|sloop|clipper|ota|composite|sinco|usb-midi/i;
 
 // errors carry a code the pages translate: notfound, model, stopped, noloader, lost, noreturn,
 // mismatch (detail: the identity the device reports), badreq, foreign (detail: the loader's identity)

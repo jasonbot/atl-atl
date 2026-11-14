@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 npi3pak
-"""Build the FM1_AudioBase release folder: the package, its checksum and every licence it needs.
+"""Build the Atl-Atl release folder: the package, its checksum and every licence it needs.
 
   tools/release.py X.Y            -> build/release-X.Y/
-      audiobase-X.Y.fwsc          the package, 48 kHz (identity FM-1_9XY, version X.Y on the splash)
+      atlatl-X.Y.fwsc              the package, 48 kHz (identity FM-1_922, version X.Y on the splash)
       SHA256SUMS                  its SHA-256
       LICENSE LICENSING.md LICENSES/   GPL-3.0 and the third-party licences (the package holds Apache-2.0 SDK files)
 
@@ -24,7 +24,7 @@ VARIANTS = [("48", "")]
 
 def main():
     if len(sys.argv) != 2 or not re.fullmatch(r"\d\.\d(-[A-Za-z0-9]+)?", sys.argv[1]):
-        raise SystemExit("usage: tools/release.py X.Y   (one digit each: the identity is FM-1_9XY)")
+        raise SystemExit("usage: tools/release.py X.Y   (one digit each; identity FM-1_922)")
     version = sys.argv[1]
     out = SRC / "build" / f"release-{version}"
     env = {**os.environ, "JIELI_TOOLCHAIN": os.environ.get("JIELI_TOOLCHAIN", str(Path.home() / ".jieli" / "toolchain"))}
@@ -33,8 +33,8 @@ def main():
     out.mkdir(parents=True)
     names = []
     for fs, suffix in VARIANTS:
-        name = f"audiobase-{version}{suffix}"
-        subprocess.run([sys.executable, str(SRC / "tools" / "build.py"), "--app", "audiobase", "--fs", fs,
+        name = f"atlatl-{version}{suffix}"
+        subprocess.run([sys.executable, str(SRC / "tools" / "build.py"), "--app", "atlatl", "--fs", fs,
                         "--release", version, "--name", name], check=True, cwd=SRC, env=env)
         shutil.copy(SRC / "build" / f"{name}.fwsc", out / f"{name}.fwsc")
         names.append(f"{name}.fwsc")

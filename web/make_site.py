@@ -4,13 +4,13 @@
 """Make the installer site, a static folder for GitHub Pages (or any HTTPS / localhost server):
 
   index.html installer.js fm1ota.js fm1pkg.js            the page (web/)
-  firmware/audiobase-VERSION.fwsc                        the package
+  firmware/atlatl-VERSION.fwsc                        the package
   firmware/manifest.json                                 its title, identity, size and SHA-256 (the page checks it)
   emu/                                                   the browser emulator (web/emu/, tools/vendor_emu.sh), this firmware in its catalog
   firmware/SHA256SUMS LICENSE LICENSING.md LICENSES/     what goes with the package (GPL-3.0, the SDK's Apache-2.0)
 
   python3 web/make_site.py --release build/release-X.Y   the release folder of tools/release.py
-  python3 web/make_site.py                               the local build: build/audiobase.fwsc
+  python3 web/make_site.py                               the local build: build/atlatl.fwsc
   python3 -m http.server -d build/site 8000              then http://localhost:8000 in Chrome or Edge
 """
 import argparse
@@ -26,15 +26,15 @@ SRC = HERE.parent
 sys.path.insert(0, str(SRC / "tools"))
 import fm1_install  # noqa: E402
 
-REPO = "https://github.com/stevexfer/FM1_AudioBase"
+REPO = "https://github.com/jasonbot/atl-atl"
 PAGE = ["index.html", "installer.js", "fm1ota.js", "fm1pkg.js"]
-AUTHOR = "stevexfer"
+AUTHOR = "jasonbot"
 # the emulator's header links its SMK-37 page, which is not copied
 EMU_DEVICES = '<nav class="devices" aria-label="Device"><span aria-current="page">FM-1</span><a href="smk37/">SMK-37</a></nav>'
 LOADER_MARK = b"FELUCCA-LOADER-1"
 PACKAGES = [
-    {"id": "audiobase", "suffix": "", "title": "FM1_AudioBase", "tag": "",
-     "desc": "USB audio through the M-VAVE FM-1, with its volume and a visualizer, 48 kHz."},
+    {"id": "atlatl", "suffix": "", "title": "Atl-Atl: The Atltuner", "tag": "",
+     "desc": "USB audio sink and key-targeted autotuner for the M-VAVE FM-1, 48 kHz."},
 ]
 
 
@@ -75,8 +75,8 @@ def emulator(out, listed, version):
 def sources(a):
     if a.release:
         version = a.version or a.release.name.removeprefix("release-")
-        return version, a.release, [(m, f"audiobase-{version}{m['suffix']}.fwsc") for m in PACKAGES]
-    return a.version or fw_version(), a.build, [(m, f"audiobase{m['suffix']}.fwsc") for m in PACKAGES]
+        return version, a.release, [(m, f"atlatl-{version}{m['suffix']}.fwsc") for m in PACKAGES]
+    return a.version or fw_version(), a.build, [(m, f"atlatl{m['suffix']}.fwsc") for m in PACKAGES]
 
 
 def main():
