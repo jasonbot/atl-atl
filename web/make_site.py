@@ -108,7 +108,13 @@ def main():
     shutil.copy(SRC / "LICENSE", fw / "LICENSE")
     shutil.copy(SRC / "LICENSING.md", fw / "LICENSING.md")
     shutil.copytree(SRC / "LICENSES", fw / "LICENSES")
-    emulator(a.out, listed, version)
+    if (HERE / "emu" / "fm1_web.wasm").exists():
+        emulator(a.out, listed, version)
+    else:
+        page = a.out / "index.html"
+        html = page.read_text(encoding="utf-8")
+        page.write_text(html.replace('<a href="emu/?mhz=240">Try it in the browser</a>', ""), encoding="utf-8")
+        print("site: no emulator (web/emu): installer only")
     (a.out / ".nojekyll").write_text("")
     for p in listed:
         print(f"site: firmware/{p['file']}  {p['size']} B  {p['product']}  {p['sha256'][:12]}")
