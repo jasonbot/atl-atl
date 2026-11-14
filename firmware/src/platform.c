@@ -80,6 +80,7 @@ static volatile uint32_t fm1_ms;                /* milliseconds since power-on (
 #define FELUCCA_OTA 1
 #define FELUCCA_CDC 0
 #define FELUCCA_UAC 1
+#define FELUCCA_UAC_OUT 1
 #define FELUCCA_UART 0
 #include "usb.c"
 
@@ -242,8 +243,12 @@ void fm1_timer5_irq(void)
     if (++sub == 10u)
         sub = 0;
     if (in_audio) {
-        if (usb_due)
+        if (usb_due) {
             uac_service();
+#if FELUCCA_UAC_OUT
+            uac_out_service();
+#endif
+        }
         return;
     }
     if (owed) {

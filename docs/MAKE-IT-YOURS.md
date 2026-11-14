@@ -1,7 +1,8 @@
 # Make it yours
 
-Dinghy is meant to be copied. This is how a copy becomes your firmware, gets released, and gets into the
-[FM-1 Firmware Hub](https://fm1.designburgapps.com) next to the others.
+This is how a copy of the host becomes your firmware, gets released, and gets into the
+[FM-1 Firmware Hub](https://fm1.designburgapps.com) next to the others. Atl-Atl is one such copy: a fork of
+fm1-dock with its own name and identity.
 
 ## 1. Copy
 

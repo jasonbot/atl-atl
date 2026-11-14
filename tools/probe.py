@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Probes: small programs run once from RAM inside fm1-dock, on an FM-1 and in fm1-emu alike, to
+"""Probes: small programs run once from RAM inside atlatl, on an FM-1 and in fm1-emu alike, to
 measure timing and test instructions (firmware/dock/hb_module.h "Probes", probes/probe.h).
 
   tools/probe.py run probes/timing.c [--on emu|fm1|emu,fm1] [--arg HEX | --args 1,2,3] [--ms 2000]
@@ -11,8 +11,8 @@ measure timing and test instructions (firmware/dock/hb_module.h "Probes", probes
       runs them with probes/exec.c and prints the registers that changed (and r0..r15 in full)
   tools/probe.py result [--port NAME]     the FM-1's last result again (after a crash: what it left)
 
-emu: fm1-live boots build/fm1-dock_xip.bin headless, the probe goes into the DIN jack (BEGIN, DATA,
-RUN), the result is read from a RAM dump (build fm1-dock first: tools/build.py). fm1: fm1-dock on the
+emu: fm1-live boots build/atlatl_xip.bin headless, the probe goes into the DIN jack (BEGIN, DATA,
+RUN), the result is read from a RAM dump (build atlatl first: tools/build.py). fm1: atlatl on the
 FM-1 over USB-MIDI (python-rtmidi: uv run --with python-rtmidi tools/probe.py ...); nothing is
 written to its flash. A probe that crashes or hangs resets the FM-1; its output so far and the
 PC are kept, and this tool asks for them once the FM-1 is back.
@@ -98,9 +98,9 @@ def summary(state, run_id, rc, ticks, out_n, pc, out):
 
 
 def pr_addr():
-    m = re.search(r"^([0-9a-f]{8}) .*\shb_probe$", (SRC / "build" / "fm1-dock.syms").read_text(), re.M)
+    m = re.search(r"^([0-9a-f]{8}) .*\shb_probe$", (SRC / "build" / "atlatl.syms").read_text(), re.M)
     if not m:
-        raise SystemExit("no hb_probe in build/fm1-dock.syms: build fm1-dock (tools/build.py)")
+        raise SystemExit("no hb_probe in build/atlatl.syms: build atlatl (tools/build.py)")
     return int(m.group(1), 16)
 
 
@@ -125,7 +125,7 @@ def run_emu(blob, arg, ms):
         (Path(wd) / "work").mkdir()
         ram = Path(wd) / "ram.bin"
         env = dict(os.environ, FM1_BENCH_KEYS=",".join(keys), FM1_DUMPRAM=str(ram))
-        r = subprocess.run([str(dock.live()), "--bin", str(SRC / "build" / "fm1-dock_xip.bin"), *os.environ.get("PROBE_EMU_ARGS", "").split(), "--shot",
+        r = subprocess.run([str(dock.live()), "--bin", str(SRC / "build" / "atlatl_xip.bin"), *os.environ.get("PROBE_EMU_ARGS", "").split(), "--shot",
                             str(int(done) + ms)], cwd=wd, capture_output=True, text=True, env=env)
         if r.returncode:
             raise SystemExit(f"fm1-live: {r.stdout[-2000:]}{r.stderr[-2000:]}")
@@ -172,7 +172,7 @@ def run_fm1(blob, arg, ms, port):
     p.inp = Counting(p.inp)
     h = hd.hello(p)
     if h["abi"] != struct.unpack_from("<I", blob, 4)[0]:
-        raise SystemExit(f"the FM-1's fm1-dock speaks ABI {h['abi']}: rebuild the probe or update fm1-dock")
+        raise SystemExit(f"the FM-1's atlatl speaks ABI {h['abi']}: rebuild the probe or update atlatl")
     frames = hd.deploy_frames(blob, (hd.RUN, hd.run_payload(run_id, arg)))
     for cmd, payload in frames[:-1]:
         d = p.ask(cmd, payload, timeout=1.0, tries=4)

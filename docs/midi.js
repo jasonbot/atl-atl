@@ -8,7 +8,7 @@ import { pairPorts } from "./install/ports.js";
 
 const $ = (s) => document.querySelector(s);
 const BLE_SVC = "03b80e5a-ede8-4b33-a751-6ce34ec4c700", BLE_CHR = "7772e5db-3868-4112-a1a9-f2669d106bf3";
-const OURS = /felucca|fm-?1|dinghy|smk|mke-?p37|starry|m-?vave/i;   // the device's port names (fm1-dock's is Felucca's)
+const OURS = /felucca|atlatl|atl-?atl|atltuner|fm-?1|dinghy|smk|mke-?p37|starry|m-?vave/i;   // the device's port names (atlatl's is Atl-Atl's)
 const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const noteName = (n) => NAMES[n % 12] + (Math.floor(n / 12) - 1);
 const S = { midi: null, usbIn: null, usbOut: null, usbName: "", ble: null, bleDev: null, base: 60, held: new Map(), demo: false, trs: null };

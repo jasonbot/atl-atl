@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* fm1-dock: one firmware for the FM-1, installed once; the synths are modules in flash slots
+/* Atl-Atl: The Atltuner — one firmware for the FM-1, installed once; the synths are modules in flash slots
  * (firmware/dock/hb_module.h). This file is the host, on Dinghy's platform (platform.c):
  *
  *   slots      the slot table (flash 0x34000) lists the modules; each is checked (header, ABI,
@@ -36,7 +36,7 @@
  *              stays). It is written as an update writes, encrypted with the chip key. One that
  *              keeps no flash data (HB_F_BOOT_NODATA: FM-1 SID) leaves the deployed modules in. */
 #ifndef APP_NAME                                /* (tools/build.py --app-name: a solo app's) */
-#define APP_NAME "FM1-DOCK"
+#define APP_NAME "atlatl"
 #endif
 #define CV_MAX (240u * 96u)
 #define APP_FAULT_HOOK hb_fault
@@ -238,6 +238,8 @@ static uint32_t check_module(const hb_slot_t *sl, uint32_t lo, uint32_t hi)   /*
     if (((const hb_module_t *)(f->base + f->desc))->abi != HB_ABI)
         return M_BAD_HEAD;
     if ((((const hb_module_t *)(f->base + f->desc))->flags & HB_F_DATA) && f->desc + sizeof(hb_module_t) > f->code_size)
+        return M_BAD_HEAD;
+    if ((((const hb_module_t *)(f->base + f->desc))->flags & HB_F_AUDIO_IN) && f->desc + HB_DESC_AUDIO_MIN > f->code_size)
         return M_BAD_HEAD;
     return M_OK;
 }
@@ -937,24 +939,32 @@ static int h_c1_run(void (*fn)(uint32_t), uint32_t arg) { return in_render && cp
 static int h_c1_wait(void) { return in_render ? cpu1_wait() : 0; }
 static uint32_t mod_key0;                       /* the note a panel module's key 0 plays (key_base), 0: the host's */
 static void h_key_base(uint32_t n) { mod_key0 = n < 128u ? n : 0u; }
+static uint32_t h_usb_in_state(void) { return uac_in_state(); }
 
 static const hb_host_t HOST = {
     HB_ABI, sizeof(hb_host_t), h_ms, h_ticks, hb_log, hb_log_u32,
     h_fill, h_text, h_cv_begin, cv_rect, cv_line, h_cv_pixel, h_cv_text, h_cv_blit,
     h_led, h_rand, mod_load, mod_save, h_midi_send, h_master, h_blit, h_text_w, h_bank_load, h_bank_save,
     h_sense_keys, h_key_sense, sense_cfg_set, h_bank_load_n, h_bank_save_n, h_bank_free, h_c1_run, h_c1_wait,
-    BOARD_SMK37 ? HB_BOARD_SMK37 : HB_BOARD_FM1, h_key_base,
+    BOARD_SMK37 ? HB_BOARD_SMK37 : HB_BOARD_FM1, h_key_base, h_usb_in_state,
 };
 
 /* ---- the sound: the module renders (and the EQ filters), the host measures */
+static int32_t usb_in_block[2u * HALF_FRAMES];
 static void app_audio(int32_t *out, uint32_t n)
 {
     const hb_module_t *m = hb_active;
     cpu1_screen_begin();                        /* the second core's screening, beside the render */
+    if (!m)
+        (void)uac_in_read(usb_in_block, n);     /* drain the sink even when no module takes it */
     if (m) {
         uint32_t t0 = fm1_ticks(), dt;
         in_render = 1;
-        m->render(out, n);
+        (void)uac_in_read(usb_in_block, n);
+        if ((m->flags & HB_F_AUDIO_IN) && m->render_in)
+            m->render_in(usb_in_block, out, n);
+        else
+            m->render(out, n);
         in_render = 0;
         if (cpu1_busy())
             (void)cpu1_wait();                  /* a job the module left out: over before the main loop runs */
@@ -1311,7 +1321,7 @@ static void draw_picker(uint32_t sel)
 #endif
         return;
     }
-    draw_text_box(0, 30, 240, &FONT_S, "MODULES", C_OFF, 1);
+    draw_text_box(0, 30, 240, &FONT_S, APP_NAME " MODULES", C_OFF, 1);
     if (first + 6u > n_mods)                    /* (room after the last module: where OPTIONS is) */
         draw_text_box(0, 62 + (n_mods - first) * 30u, 240, &FONT_S, "OPTIONS >", C_OFF, 1);
     for (i = first; i < n_mods && i < first + 6u; i++) {
@@ -1592,7 +1602,7 @@ static void draw_about(uint32_t top)
     for (i = 0; i < AB_ROWS && top + i < AB_FIXED + n_mods; i++) {
         char s[40], *p = s;
         switch (top + i) {
-        case 0: put_s(p, "fm1-dock " AB_VER); break;
+        case 0: put_s(p, APP_NAME " " AB_VER); break;
         case 1:
             p = put_s(p, AB_BOARD "  1CPU  reset ");
             if (in[IN_CPU1] == CPU1_OK || in[IN_CPU1] == CPU1_SCREENING)   /* (as the top line has it) */
@@ -2481,7 +2491,10 @@ static void smk_extras(const hb_module_t *m, uint32_t base)
 static void app_main(void)
 {
     uint32_t prev = 0, k, full = 1, picker = 0, sel = 0, t_top = 0, held_any = 0, t_notes = 0, safe = 0;
-    uint32_t home_t0 = 0, home_alone = 0, home_eaten = 0;   /* HOME held alone 1.5 s: the picker (HB_F_PANEL) */
+#ifndef HB_SOLO
+    uint32_t home_t0 = 0, home_alone = 0;       /* HOME held alone 1.5 s: the picker (HB_F_PANEL) */
+#endif
+    uint32_t home_eaten = 0;
     uint32_t ble_drawn = HX_S_MISSING + 1u, cc7_drawn = 127u;   /* (the OPTIONS lines as drawn) */
     uint32_t eqp = 0, eq_row = 0, eq_said = 0;  /* a page open (1 the EQ's, 2 ABOUT), its line; the EQ's failure logged */
     uint32_t sheld = 0, t_press = 0;            /* the sensed keys held (bit k); the pressure's last round */
@@ -2505,7 +2518,7 @@ static void app_main(void)
             bootguard.failed--;
     }
     hb_nv.active = 0;
-    hb_log_u32("fm1-dock " APP_VER " boot, reset", fm1_boot.p3_rst);
+    hb_log_u32(APP_NAME " " APP_VER " boot, reset", fm1_boot.p3_rst);
     hb_log_u32("supplies VDC14 SYSVDD: found, now", fm1_supplies);   /* (fm1_power.h: 7 / 15 M-VAVE's own) */
     if (fm1_power_err)                          /* (P33 as the boot loader left them and after: fm1_power_was / _now) */
         hb_log_u32("supplies not as stock", fm1_power_err);
@@ -2545,6 +2558,10 @@ static void app_main(void)
     safe = (fm1_in.buttons >> BTN_OCT_UP) & 1u;
     ble_boot(safe);
     eq_held = (uint8_t)((st.spare[2] & EQ_ON) && (bootguard.failed || safe));   /* (as the radio: a way back from an EQ that misbehaves on the chip) */
+#ifdef HB_SOLO
+    st.spare[2] &= ~EQ_ON;                          /* the dedicated firmware has no hidden EQ */
+    eq_held = 0;
+#endif
     if (eq_held)
         hb_log("EQ saved ON, held this boot");
     else
@@ -2554,8 +2571,8 @@ static void app_main(void)
         hb_log("safe boot (OCT+): the sine only, the radio not started");
     k = safe ? 0 : find_key(st.sel_key);
 #ifdef HB_SOLO
-    if (!safe && !st.sel_key && n_mods > 1u && mods[1].kind == K_IMAGE)
-        k = 1;                                  /* a solo app's new install (nothing picked yet): its module */
+    if (!safe && n_mods > 1u && mods[1].kind == K_IMAGE)
+        k = 1;                                  /* the only app: always, whatever an older firmware left selected */
 #endif
     if (k && mods[k].kind == K_BOOT) {          /* the boot firmware is the one, but fm1-dock stayed: the sine */
         hb_log_u32("boot firmware not started", boot_why);
@@ -2593,7 +2610,11 @@ static void app_main(void)
         m = hb_active;
         panel = m && (m->flags & HB_F_PANEL) && m->ui;
         screen = m && (m->flags & HB_F_SCREEN);
+#ifdef HB_SOLO
+        local = 1;                              /* the tuner needs the keys: no hidden LOCAL OFF */
+#else
         local = !(st.spare[1] & OPT_LOCAL_OFF);
+#endif
         kpanel = panel && local;                /* the module plays its keys (LOCAL OFF: the host sends them) */
         och = opt_ch() ? opt_ch() - 1u : 0;     /* the channel the keys send on (MIDI CH; ALL: 1) */
 
@@ -2679,8 +2700,10 @@ static void app_main(void)
             }
         }
         held_any = keys != 0;
+#ifndef HB_SOLO
         if (down)
             home_alone = 0;
+#endif
         if (st.spare[1] & OPT_MASTER_CC7)
             master_cc7(och);
         else
@@ -2730,8 +2753,10 @@ static void app_main(void)
             for (e = 0; e < 7u; e++)
                 fm1_enc_take(e);
         }
+#ifndef HB_SOLO
         if (!picker && (st.spare[1] & OPT_KNOBS))
             knobs_cc(m, och, local);            /* (before the module's: they are not its knobs then) */
+#endif
         if (!panel || picker) {
             if (b & (1u << BTN_OCT_DOWN) && st.oct > -2) { st.oct--; store_touch(); }
             if (b & (1u << BTN_OCT_UP) && st.oct < 2) { st.oct++; store_touch(); }
@@ -2830,17 +2855,25 @@ static void app_main(void)
                 }
             }
         } else if (panel) {                     /* every button and encoder is the module's */
+#ifndef HB_SOLO
             if (b >> BTN_HOME & 1u) { home_t0 = fm1_ms; home_alone = 1; home_eaten = 0; }
             if ((b & ~(1u << BTN_HOME)) || (keys && b >> BTN_HOME & 1u))
                 home_alone = 0;
+#endif
             for (k = 0; k < (m->flags & HB_F_XBTN ? HB_BTN_RIGHT + 1u : 14u); k++) {   /* (XBTN: the SMK's too) */
                 if (b >> k & 1u) m->ui(HB_EV_BTN_DOWN | k, 0);
                 if (rel >> k & 1u && !(k == BTN_HOME && home_eaten)) m->ui(HB_EV_BTN_UP | k, 0);
             }
             for (e = 0; e < 7u; e++) {
                 int32_t c = fm1_enc_take(e);
-                if (c) { m->ui(HB_EV_ENC | e, c); home_alone = 0; }
+                if (c) {
+                    m->ui(HB_EV_ENC | e, c);
+#ifndef HB_SOLO
+                    home_alone = 0;
+#endif
+                }
             }
+#ifndef HB_SOLO
             if (home_alone && (fm1_in.buttons >> BTN_HOME & 1u) && fm1_ms - home_t0 >= 1500u) {
                 m->ui(HB_EV_BTN_UP | BTN_HOME, 0);   /* HOME held alone: the picker; the module saw it let go */
                 home_alone = 0;
@@ -2851,12 +2884,16 @@ static void app_main(void)
                 draw_picker(sel);
                 full = 1;
             }
+#endif
         } else {
+#ifndef HB_SOLO
             if (b & (1u << BTN_HOME)) {
                 picker = 1;
                 sel = cur;
                 draw_picker(sel);
-            } else if (m && m->ui) {
+            } else
+#endif
+            if (m && m->ui) {
                 for (k = 2; k < (m->flags & HB_F_XBTN ? HB_BTN_RIGHT + 1u : 14u); k++) {   /* not OCT-/+, HOME */
                     if (k == BTN_HOME) continue;
                     if (b >> k & 1u) m->ui(HB_EV_BTN_DOWN | k, 0);

@@ -24,7 +24,7 @@ def check(case, ok, why):
 
 
 def main():
-    pkgs = {"fm1": SRC / "build" / "fm1-dock.fwsc", "smk": SRC / "build" / "fm1-dock-smk37.fwsc"}
+    pkgs = {"fm1": SRC / "build" / "atlatl.fwsc", "smk": SRC / "build" / "atlatl-smk37.fwsc"}
     for board, path in pkgs.items():
         if not path.exists():
             print(f"  (no {path.name}: its cases are skipped)")

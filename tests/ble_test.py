@@ -23,7 +23,7 @@ import emu_test as et  # noqa: E402
 
 SRC = et.SRC
 OUT = SRC / "build" / "emu" / "ble"
-HX_FILE = 0x84000                               # HX in fm1-dock_xip.bin (XIP 0x02084000, flash 0x88000)
+HX_FILE = 0x84000                               # HX in atlatl_xip.bin (XIP 0x02084000, flash 0x88000)
 VM_AT = 0xE8000
 NOTE = "1600:34,2200:34^"                       # a top-row key: the sine at 1.6 .. 2.2 s
 ST = {0: "OFF", 1: "NO CAL", 2: "HELD", 3: "ON", 4: "LINKED", 5: "READY"}

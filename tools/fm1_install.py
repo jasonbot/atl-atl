@@ -33,8 +33,8 @@ FINISH_CHECK, FINISH_WRITE = 0xE0000000, 0xF0000000
 MAXDATA = 512
 BLOCKS, BLK, KEEP = 20, 0x30, 0x2F
 LOADER_MARK = b"FELUCCA-LOADER-1"
-PORT_RE = re.compile(r"fm-1|smk|elite|mke-p37|starry|felucca|ota|composite|sinco|usb-midi", re.I)   # never probe other
-# gear (the FM-1 and the SMK-37 family: their stock firmwares, Felucca's and fm1-dock's, the update loaders)
+PORT_RE = re.compile(r"fm-1|smk|elite|mke-p37|starry|felucca|atl-?atl|atltuner|ota|composite|sinco|usb-midi", re.I)   # never probe other
+# gear (the FM-1 and the SMK-37 family: their stock firmwares, Felucca's and atlatl's, the update loaders)
 OWN_LOADER_RE = re.compile(r"ota-(FM-1|SMK-37 Pro|SMK-37 Elite|MKE-P37)_9\d\d", re.I)   # Felucca's own update loader
 
 # seconds; the tests shorten them

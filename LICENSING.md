@@ -1,8 +1,12 @@
 # Licensing
 
-fm1-dock is free software under the GNU General Public License, version 3 only (`GPL-3.0-only`, full text in
-`LICENSE`). You may use, study, change and share it. If you give someone a firmware built from it, give them its
-complete source under the same licence too.
+Atl-Atl: The Atltuner is free software under the GNU General Public License, version 3 only (`GPL-3.0-only`, full
+text in `LICENSE`). You may use, study, change and share it. If you give someone a firmware built from it, give
+them its complete source under the same licence too.
+
+Atl-Atl is its own firmware (identity `FM-1_922`). It is a fork of fm1-dock and uses the Felucca platform and other
+upstream work; the table below records who made what. Those parts keep their authors' copyright and licence, and
+this file does not claim them as Atl-Atl's own.
 
 ## Who made what
 
@@ -10,6 +14,7 @@ complete source under the same licence too.
 | --- | --- |
 | The platform: `firmware/hal/`, `firmware/loader/`, `crt0.S`, `app.ld`, `firmware/src/` (`usb.c`, `ota.c`, `recovery.c`, `lcd.c`, `gfx.c`, `libc.c`, `bootguard.h`, `uac_fir.h`), `tools/` | Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments ([Felucca](https://github.com/hugelton/Felucca)), with the changes of [SLOOP](https://github.com/isod89/sloop-fm1) (isod89) |
 | The host `firmware/src/dock.c`, the module interface `firmware/dock/`, the tools for modules, deploys and probes (`tools/dock.py`, `hbmod.py`, `hbdeploy.py`, `hbboot.py`, `probe.py`), `probes/`, the page `docs/` | Joakim Eriksson |
+| Atl-Atl: The Atltuner — the USB audio sink host path, `HB_F_AUDIO_IN`, the ATLTUNER module (`modules/atltuner/`) and its documentation | the Atl-Atl contributors (this repository) |
 | The keys' force sensing `firmware/src/sense.c` | Velo's, by way of CS-1 (twochannels) |
 | The modules: CS-1 `modules/cs1/` | twochannels ([CS-1](https://github.com/twochannels/CS-1)), wrapped by Joakim Eriksson |
 | Scintilla `modules/scintilla/` | Joakim Eriksson ([Scintilla](https://github.com/joakimeriksson/scintilla-fm1)) |

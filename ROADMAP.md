@@ -1,6 +1,8 @@
-# fm1-dock: roadmap
+# Atl-Atl: The Atltuner — roadmap
 
-Where fm1-dock is going, in the order it is planned. What is done is in the
+Where Atl-Atl is going. The host and module roadmap is inherited from fm1-dock; the tuner-specific work is at the
+top. References to fm1-dock below describe the upstream project Atl-Atl is built on. Atl-Atl's package identity is
+`FM-1_922`. What is done is in the
 [releases](https://github.com/joakimeriksson/fm1-dock/releases); how it is built is in [PLAN.md](PLAN.md).
 
 ## Now: 0.8 (released 2026-11-07)

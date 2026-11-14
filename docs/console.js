@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// The page's console: fm1-dock on an FM-1 over WebMIDI (dock.js), and the flash map.
+// The page's console: atlatl on an FM-1 over WebMIDI (dock.js), and the flash map.
 import { Dock, CMD, moduleInfo, probeArg, Syms, hex32, sleep } from "./dock.js";
 import { pairPorts } from "./install/ports.js";
 
@@ -60,19 +60,19 @@ function ports() {
   const sel = $("c-port"), keep = sel.value;
   sel.innerHTML = "";
   for (const o of outs) sel.add(new Option(o.name, o.id));
-  const want = outs.find((o) => o.id === keep) || outs.find((o) => /felucca|fm1-dock|dock|fm-?1/i.test(o.name)) || outs[0];
+  const want = outs.find((o) => o.id === keep) || outs.find((o) => /felucca|atlatl|atl-?atl|atltuner|dock|fm-?1/i.test(o.name)) || outs[0];
   if (!want) { sel.add(new Option("no MIDI outputs")); sel.disabled = true; return null; }
   sel.value = want.id;
   sel.disabled = false;
   const pair = pairPorts(access.inputs, access.outputs).find((p) => p.output === want);   // (Windows may name the two apart)
-  const inp = pair ? pair.input : ins.find((i) => /felucca|fm1-dock|dock|fm-?1/i.test(i.name));
+  const inp = pair ? pair.input : ins.find((i) => /felucca|atlatl|atl-?atl|atltuner|dock|fm-?1/i.test(i.name));
   return inp ? { out: want, inp } : null;
 }
 
 async function open() {
   if (hb) { hb.close(); hb = null; }
   const p = ports();
-  if (!p) { setState("no FM-1 found: is it plugged in, running fm1-dock?", "bad"); enable(false); return; }
+  if (!p) { setState("no FM-1 found: is it plugged in, running atlatl?", "bad"); enable(false); return; }
   hb = new Dock(p.inp, p.out, { onMidi: midiIn, onTraffic: traffic });
   setState(`opening ${p.out.name}…`);
   try {
@@ -227,7 +227,7 @@ async function runProbe() {
       await sleep(1000);
       try { await open(); showProbe(await serial(() => hb.result())); return; } catch { /* not back yet */ }
     }
-    out.textContent += "\nthe FM-1 did not come back over USB: replug it (fm1-dock keeps the result) and press Last result.";
+    out.textContent += "\nthe FM-1 did not come back over USB: replug it (atlatl keeps the result) and press Last result.";
   } catch (e) { out.textContent = e.message; }
 }
 
@@ -286,7 +286,7 @@ for (const l of document.querySelectorAll(".file")) {
 // the flash map (flash offsets; firmware/src/dock.c)
 const FLASH = [
   [0x000000, 0x004000, "boot and the package header", "other"],
-  [0x004000, 0x034000, "fm1-dock (the host)", "upd"],
+  [0x004000, 0x034000, "atlatl (the host)", "upd"],
   [0x034000, 0x035000, "slot table", "upd"],
   [0x035000, 0x093000, "image modules", "upd"],
   [0x093000, 0x095000, "deployed table, two copies", "keep"],

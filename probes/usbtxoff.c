@@ -5,7 +5,7 @@
  * note-ons (60 + slot), then note 100 + offset sent through midi_send. What tools/probe.py lists:
  * 100 + offset = sent from the address as given; a decoy = read from somewhere else (60 + offset/4
  * rounded down to 8 = 60 or 62); nothing = the packet lost. All notes off at the end.
- * argument: [&ep1tx, &hb_usb_tx_off, &hb_usb_tx_left, &hb_usb_tx_reverts] (build/fm1-dock.syms) */
+ * argument: [&ep1tx, &hb_usb_tx_off, &hb_usb_tx_left, &hb_usb_tx_reverts] (build/atlatl.syms) */
 #include "probe.h"
 
 static void wait_ms(hb_probe_ctx_t *c, uint32_t ms)

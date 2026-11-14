@@ -21,9 +21,9 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SRC / "tools"))
-FWSC_BUILD = SRC / "build" / "fm1-dock.fwsc"
+FWSC_BUILD = SRC / "build" / "atlatl.fwsc"
 FWSC_SHIPPED = SRC / "docs" / "fm1-dock-0.5.fwsc"
-APP = SRC / "build" / "fm1-dock_xip.bin"
+APP = SRC / "build" / "atlatl_xip.bin"
 failures = []
 
 
@@ -418,16 +418,16 @@ def test_ide_files_not_in_docs():
 
 
 def test_emu_prefers_tree_build():
-    """--emu must prefer build/fm1-dock.fwsc over the shipped docs/fm1-dock-0.5.fwsc.
+    """--emu must prefer build/atlatl.fwsc over the shipped docs/fm1-dock-0.5.fwsc.
     The adapter source should reference build/ as the default, not hard-code the 0.5 release."""
     print("source: emu prefers tree build...")
     adapter = (SRC / "tools" / "fm1dap.py").read_text()
-    # The boot function should look for build/fm1-dock.fwsc before the docs package
-    check("emu_build_first", "build" in adapter and "fm1-dock.fwsc" in adapter,
-          "adapter does not reference build/fm1-dock.fwsc")
+    # The boot function should look for build/atlatl.fwsc before the docs package
+    check("emu_build_first", "build" in adapter and "atlatl.fwsc" in adapter,
+          "adapter does not reference build/atlatl.fwsc")
     # The hard-coded 0.5 path should only be a fallback, not the primary
     lines = adapter.splitlines()
-    build_line = next((i for i, l in enumerate(lines) if "build" in l and "fm1-dock.fwsc" in l), 999)
+    build_line = next((i for i, l in enumerate(lines) if "build" in l and "atlatl.fwsc" in l), 999)
     docs_line = next((i for i, l in enumerate(lines) if "docs" in l and "fm1-dock-0.5" in l), 999)
     check("emu_build_before_docs", build_line < docs_line,
           f"build ref at line {build_line+1}, docs ref at line {docs_line+1}")

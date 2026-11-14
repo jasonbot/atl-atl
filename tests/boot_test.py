@@ -23,7 +23,7 @@ import dock  # noqa: E402
 import hbdeploy as hd  # noqa: E402
 import hbmod  # noqa: E402
 
-FWSC = SRC / "build" / "fm1-dock.fwsc"
+FWSC = SRC / "build" / "atlatl.fwsc"
 failures = []
 
 
@@ -67,7 +67,7 @@ def main():
             return live(ms, keys, f, wd) + (f,)
 
         log, go, peak, _ = run("boot", ["2500:21", "3500:21^"])
-        check("boot", go[1] == 1 and log.startswith("no fm1-dock state") and peak > 500,
+        check("boot", go[1] == 1 and log.startswith("no atlatl state") and peak > 500,
               f"handed over (start {go[1]}), {name} runs (fm1-dock's NOINIT is its now) and plays (peak {peak})")
 
         log, go, peak, _ = run("home", ["0:8", "1500:8^", "2500:21", "3500:21^"])

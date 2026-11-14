@@ -1,7 +1,7 @@
 {
-  "what": "One firmware, many synths: hold HOME and pick CS-1, Scintilla (the Elka Synthex), OberVave or a sine, no reflashing. Add PROPHET, B3 ORGAN, Niagara Drift, ARTIHIVE, FM-106, FM-1 SID, AMB-1, FoMni, MONK-1, FiMba-1, GATOR, DUB-1, FMINI-1, FM6 or ATEK303 from the page with one click, and your own modules over USB. A master EQ, MIDI options, BLE-MIDI, the second core, a MIDI test page, and the log and crash record in the browser.",
+  "what": "Atl-Atl: The Atltuner — the FM-1 as a USB audio sink and a key-targeted autotuner. Hold a key to set the target note; the four knobs set speed, mix, correction and octave; the result plays through the speaker or headphones. Built on fm1-dock and the Felucca platform.",
   "kinds": [
     "synth"
   ],
-  "play": "https://joakimeriksson.github.io/fm1-dock/#emulator"
+  "play": "https://github.com/jasonbot/atl-atl"
 }

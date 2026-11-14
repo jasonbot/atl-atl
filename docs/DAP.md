@@ -1,4 +1,4 @@
-# Debugging fm1-dock from your IDE
+# Debugging Atl-Atl from your IDE
 
 The DAP adapter (`tools/fm1dap.py`) connects your IDE to a running FM-1 over
 USB-MIDI SysEx, an emulator RAM dump, or synthetic mock data. It shows the
@@ -182,7 +182,7 @@ No firmware changes are needed. The adapter uses the same SysEx protocol as
 When launched with `--emu`, the adapter:
 
 1. Finds fm1-live via `FM1_LIVE` env or the default path (see `tools/dock.py live()`)
-2. Boots the firmware (prefers `build/fm1-dock.fwsc`, falls back to `docs/fm1-dock-0.5.fwsc`) for 2000 ms
+2. Boots the firmware (prefers `build/atlatl.fwsc`, falls back to `docs/fm1-dock-0.5.fwsc`) for 2000 ms
 3. Writes RAM dump to `build/emu/ram.bin`
 4. Attaches to the RAM dump as if `--ram` was passed
 

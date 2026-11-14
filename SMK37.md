@@ -1,23 +1,24 @@
-# fm1-dock on the M-Vave SMK-37
+# Atl-Atl on the M-Vave SMK-37
 
-fm1-dock also runs on the **M-Vave SMK-37** keyboards: the SMK-37 Pro, the SMK-37 Elite and the MKE-P37, and the
+Atl-Atl also runs on the **M-Vave SMK-37** keyboards: the SMK-37 Pro, the SMK-37 Elite and the MKE-P37, and the
 Donner Starrykey 37 Play (with the SMK-37 Pro's package). They have the FM-1's chip; only the panel and the flash map
-differ. It is the same fm1-dock, with the same modules: CS-1, Scintilla, OberVave and the sine in the package, and
-FM-106, MONK-1, FiMba-1, GATOR, DUB-1, FM-1 SID, AMB-1 and FoMni added from [the page](https://joakimeriksson.github.io/fm1-dock/#modules). A module does not
-need to know: the SMK's panel reaches it as an FM-1's, and what the FM-1 does not have (the outer keys, the pads, the
-faders, the wheels) reaches it as MIDI.
+differ. It is the same dedicated **ATLTUNER** firmware: one app, no module picker, no OPTIONS page and no packaged
+synth. The SMK's panel reaches it as an FM-1's; the outer keys, pads, faders and wheels are not part of this build.
 
-> **Status**: built and tested in [fm1-emu](https://github.com/joakimeriksson/fm1-emu), which runs the SMK-37
-> (`tests/smk_test.py`: the keys and their velocity, the pads, faders and wheels, the module list, deploys into both
-> areas, BLE-MIDI's start-up, the USB rescue). Not yet tried on a real SMK-37.
+> **This is the dedicated ATLTUNER build.** Sections below about the module list, the picker, OPTIONS and
+> per-module manuals are inherited from the fm1-dock host and do not apply. The tuner's controls are in the
+> [README](README.md#controls).
+
+> **Status**: the dedicated build compiles for each SMK model; the inherited fm1-dock platform tests cover the SMK's
+> panel and keys, but this exact ATLTUNER build has not been tried on a real SMK-37.
 
 ## Packages and models
 
 | Your keyboard | Package | Identity |
 | --- | --- | --- |
-| SMK-37 Pro, Starrykey 37 Play | `fm1-dock-X.Y-smk37.fwsc` | `SMK-37 Pro_921` |
-| SMK-37 Elite | `fm1-dock-X.Y-smk37-elite.fwsc` | `SMK-37 Elite_921` |
-| MKE-P37 | `fm1-dock-X.Y-smk37-mke.fwsc` | `MKE-P37_921` |
+| SMK-37 Pro, Starrykey 37 Play | `atlatl-X.Y-smk37.fwsc` | `SMK-37 Pro_922` |
+| SMK-37 Elite | `atlatl-X.Y-smk37-elite.fwsc` | `SMK-37 Elite_922` |
+| MKE-P37 | `atlatl-X.Y-smk37-mke.fwsc` | `MKE-P37_922` |
 
 Each package reports its own model's name, so M-Vave's own updater still takes that model's factory firmware
 afterwards. The installers refuse an FM-1 package on an SMK-37 and an SMK-37 package on an FM-1, before anything is
@@ -41,12 +42,10 @@ Installing firmware is at your own risk.
 
 ## Install
 
-In Chrome or Edge, with the keyboard on USB: **Install fm1-dock on my FM-1** on
-[the page](https://joakimeriksson.github.io/fm1-dock/#install). It asks the keyboard for its model and installs that
-model's package. Or over USB from a computer:
+Build the keyboard's package with `./build.sh --board smk37` (or `--model elite` / `mke`) and install it over USB:
 
 ```sh
-python3 tools/fm1_install.py fm1-dock-X.Y-smk37.fwsc        # the Elite / MKE-P37: their package
+python3 tools/fm1_install.py atlatl-X.Y-smk37.fwsc        # the Elite / MKE-P37: their package
 ```
 
 It works from the stock firmware and from the other Felucca-family firmwares.
@@ -98,7 +97,7 @@ SID (268 KiB) and AMB-1 (76 KiB) fit together; FoMni (139 KiB) fits in the first
 
 As on the FM-1: **BLUETOOTH**, the last line of OPTIONS past the module list (PATCH, K2 down, SCALE), switches it ON
 (ABOUT, the line above it, shows the version, the model, the flash chip's id and the modules: K2 scrolls, PATCH goes back); the keyboard then
-shows up as `FM1-DOCK XXXX` among a computer's or a tablet's Bluetooth MIDI devices. It is the same code as the FM-1's
+shows up as `Atl-Atl XXXX` among a computer's or a tablet's Bluetooth MIDI devices. It is the same code as the FM-1's
 (the chip and its radio are the same), with one difference: where the radio's stored calibration comes from.
 
 The radio starts from a calibration the stock firmware stores in its settings store (VM), as on the FM-1. On the SMK-37
@@ -132,8 +131,8 @@ What is known, and how (fm1-emu runs the stock firmwares of both on the same chi
 ## Build
 
 ```sh
-./build.sh --board smk37                    # build/fm1-dock-smk37.fwsc (SMK-37 Pro)
-./build.sh --board smk37 --model elite      # build/fm1-dock-smk37-elite.fwsc; --model mke: the MKE-P37's
+./build.sh --board smk37                    # build/atlatl-smk37.fwsc (SMK-37 Pro)
+./build.sh --board smk37 --model elite      # build/atlatl-smk37-elite.fwsc; --model mke: the MKE-P37's
 ./build.sh                                  # the FM-1's last: the boards share the build's intermediate files
 tests/smk_test.py                           # in fm1-emu (FM1_LIVE)
 ```

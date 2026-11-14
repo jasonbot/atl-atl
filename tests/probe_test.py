@@ -54,7 +54,7 @@ def main():
         import os
         (Path(wd) / "work").mkdir()
         env = dict(os.environ, FM1_BENCH_KEYS=",".join(keys), FM1_DUMPRAM=str(Path(wd) / "ram.bin"))
-        subprocess.run([str(dock.live()), "--bin", str(SRC / "build" / "fm1-dock_xip.bin"), "--shot",
+        subprocess.run([str(dock.live()), "--bin", str(SRC / "build" / "atlatl_xip.bin"), "--shot",
                               str(int(done) + 800)], cwd=wd, capture_output=True, text=True, env=env)
         log = dock.read_log((Path(wd) / "ram.bin").read_bytes())
     check("commit_refuses_probe", "deploy failed 00000002" in log and "deploy: written" not in log,

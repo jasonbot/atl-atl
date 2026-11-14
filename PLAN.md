@@ -1,4 +1,8 @@
-# fm1-dock: plan
+# Atl-Atl: The Atltuner — plan
+
+Atl-Atl is its own firmware: a USB-audio sink and key-targeted autotuner on the fm1-dock host. This plan is
+inherited from fm1-dock; references to fm1-dock below describe the host and module system Atl-Atl is built on.
+Atl-Atl's own package identity is `FM-1_922`.
 
 One firmware for the M-VAVE FM-1 that is installed once. Synths are modules sent over
 USB-MIDI into flash slots; one runs at a time, as many are stored as fit. A broken module can

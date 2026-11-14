@@ -33,6 +33,8 @@
                                                  * (tools/dock.py's MODULE frames) reaches it */
 #define HB_F_XBTN   8u                          /* the SMK-37's own buttons reach ui() too, as HB_BTN_KNOB_BANK ..
                                                  * HB_BTN_RIGHT (never on an FM-1); their LEDs are HB_LED_XBTN(id) */
+#define HB_F_AUDIO_IN 16u                       /* the descriptor has render_in(): the host passes the USB audio
+                                                 * sink's PCM (Q15 stereo, 44.1 kHz) to it instead of render() */
 
 /* ui() events: kind in the top byte, the id below; arg is the encoder's clicks */
 enum {
@@ -147,7 +149,11 @@ typedef struct hb_host {
     /* a panel module (HB_F_PANEL) with its own octave says the note its key 0 (F3) plays, n 0 none (the host's
      * octave): an SMK-37's outer keys, the host's, go on from it (a module checks size first) */
     void (*key_base)(uint32_t n);
+    /* HB_F_AUDIO_IN's stream state (a module checks size first): HB_USB_IN_NONE or
+     * HB_USB_IN_STREAMING (the host has the sink's interface open and frames are arriving) */
+    uint32_t (*usb_in_state)(void);
 } hb_host_t;
+enum { HB_USB_IN_NONE = 0, HB_USB_IN_STREAMING = 1 };
 enum { HB_BOARD_FM1 = 0, HB_BOARD_SMK37 = 1 };
 /* the host has field f of hb_host_t (an older one ends before it) */
 #define HB_HOST_HAS(h, f) ((h)->size >= (uint32_t)(__builtin_offsetof(hb_host_t, f) + sizeof (h)->f))
@@ -177,8 +183,13 @@ typedef struct hb_module {
      * computer, up to HB_DATA_MAX bytes, in the main loop; 0: taken, else the module's own error (1..255),
      * which goes back to the computer. Nothing of it is kept by the host */
     int (*data)(const uint8_t *p, uint32_t n);
+    /* HB_F_AUDIO_IN only (a descriptor without the flag ends at data): the USB audio sink's block, n
+     * stereo frames (L R, Q15), plus out, zeroed by the host; write the processed block into out.
+     * Called in the audio interrupt instead of render(). in is valid only during the call. */
+    void (*render_in)(const int32_t *in, int32_t *out, uint32_t n);
 } hb_module_t;
 #define HB_DESC_MIN ((uint32_t)__builtin_offsetof(hb_module_t, data))   /* a descriptor without HB_F_DATA */
+#define HB_DESC_AUDIO_MIN ((uint32_t)(__builtin_offsetof(hb_module_t, render_in) + sizeof(void *)))
 #define HB_DATA_MAX 512u
 /* A file to a module (tools/dock.py send, the pages' WebMIDI): data() gets 'B' [size u32][arg u32] (a
  * file begins: arg is the module's, FM-1 SID's subtune), then 'D' [at u32][bytes] in order from at 0 (the

@@ -5,7 +5,7 @@ fm1-dock's BLUETOOTH (PLAN.md, "BLE-MIDI") tested from a Mac.
 
   uv run --with bleak tools/blemidi.py scan [--secs 6]
       the devices advertising the BLE-MIDI service, with their signal strength
-  uv run --with bleak tools/blemidi.py test [--name FM1-DOCK] [--secs 15]
+  uv run --with bleak tools/blemidi.py test [--name ATL-ATL] [--secs 15]
       connects, turns the MIDI notifications on, plays C E G (a note each 0.4 s) into the FM-1, then
       prints what the FM-1 sends for the rest of the time: play its keys
 
@@ -111,7 +111,7 @@ def main():
     s = sub.add_parser("scan")
     s.add_argument("--secs", type=float, default=6)
     t = sub.add_parser("test")
-    t.add_argument("--name", default="FM1-DOCK")
+    t.add_argument("--name", default="ATL-ATL")
     t.add_argument("--secs", type=float, default=15)
     a = ap.parse_args()
     return asyncio.run(scan(a) if a.cmd == "scan" else test(a))

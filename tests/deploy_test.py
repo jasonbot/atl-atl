@@ -28,7 +28,7 @@ import dock  # noqa: E402
 import hbdeploy  # noqa: E402
 import hbmod  # noqa: E402
 
-FWSC = SRC / "build" / "fm1-dock.fwsc"
+FWSC = SRC / "build" / "atlatl.fwsc"
 SINE = SRC / "build" / "modules" / "sine.dock"
 DT = (0x93000, 0x94000)
 NOTE = 21                                       # C4's key (14 + 7)
@@ -201,7 +201,7 @@ def main():
               "the sine plays the next key")
 
         # a module's bank: CS-1's user presets, there after a reboot
-        img = (SRC / "build" / "fm1-dock.bin").read_bytes()
+        img = (SRC / "build" / "atlatl.bin").read_bytes()
         names = []
         for i in range(32):
             magic, at, size, crc = struct.unpack_from("<IIII", img, 0x30000 - 0x120 + 16 * i)

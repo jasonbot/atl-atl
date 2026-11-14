@@ -128,7 +128,7 @@ def din_script(blob, t0, settle=400, write_ms=None, last=None):
 
 
 class Port:
-    """a USB-MIDI port pair by part of its name (the device calls itself Felucca)"""
+    """a USB-MIDI port pair by part of its name (the device calls itself Atl-Atl)"""
 
     def __init__(self, name=None, blind=False):
         try:
@@ -137,7 +137,7 @@ class Port:
             raise SystemExit("needs python-rtmidi: uv run --with python-rtmidi tools/dock.py ...")
         self.out = rtmidi.MidiOut()
         self.inp = None if blind else rtmidi.MidiIn()
-        want = [name] if name else ["Felucca", "FM1-DOCK", "HARBOR", "FM-1"]
+        want = [name] if name else ["Atl-Atl", "atlatl", "Felucca", "HARBOR", "FM-1"]
         self.out.open_port(self._find(self.out, want))
         if self.inp:
             self.inp.open_port(self._find(self.inp, want))

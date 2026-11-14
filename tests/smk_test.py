@@ -31,7 +31,7 @@ import dock  # noqa: E402
 import hbdeploy  # noqa: E402
 import hbmod  # noqa: E402
 
-FWSC = SRC / "build" / "fm1-dock-smk37.fwsc"
+FWSC = SRC / "build" / "atlatl-smk37.fwsc"
 DT = (0xB8000, 0xB9000)
 AREA1, AREA2 = (0x70000, 0xB8000), (0xC2000, 0xE2000)
 PROTECTED = [(0x0, 0x4000), (0xC0000, 0xC2000), (0xF4000, 0xFE000), (0xFF000, 0x100000)]
@@ -155,8 +155,8 @@ def scintilla(flash):
     subprocess.run(["cc", "-I", str(eng), "-o", str(exe), str(c)], check=True)
     cut, att = map(int, subprocess.run([str(exe)], capture_output=True, text=True).stdout.split())
     syms = (SRC / "build" / "modules" / "scintilla" / "module.syms").read_text()
-    host = (SRC / "build" / "fm1-dock-smk37.syms").read_text() if (SRC / "build" / "fm1-dock-smk37.syms").exists() \
-        else (SRC / "build" / "fm1-dock.syms").read_text()
+    host = (SRC / "build" / "atlatl-smk37.syms").read_text() if (SRC / "build" / "atlatl-smk37.syms").exists() \
+        else (SRC / "build" / "atlatl.syms").read_text()
 
     def at(text, name):
         return int(re.search(rf"^([0-9a-f]{{8}}) .*\s{name}$", text, re.M).group(1), 16) - dock.RAM_BASE

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* fm1-dock's pages: dark by default, a light scheme with the system's; the accent is the screen's lilac,
+/* fm1-dock's pages (the host Atl-Atl is built on): dark by default, a light scheme with the system's; the accent is the screen's lilac,
    RGB(180, 140, 255) as dock.c's C_ACC and the logo */
 :root {
   color-scheme: dark;
@@ -24,7 +24,18 @@
   --shot-bg: #000;
   --header-bg: rgba(13, 12, 17, 0.86);
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.8);
-  /* code, logs and the terminal look stay dark in both schemes */
+  /* the provenance note at the top of the retained fm1-dock pages */
+.atlatl-note {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-2);
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 14px;
+}
+.atlatl-note a { color: var(--acc-text); }
+
+/* code, logs and the terminal look stay dark in both schemes */
   --term-bg: #09080d;
   --term-fg: #e2ddec;
   --term-dim: #847d96;

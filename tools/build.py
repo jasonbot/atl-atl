@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-"""Build fm1-dock (on Dinghy, on Felucca / SLOOP's platform): the host, the modules, the update
+"""Build Atl-Atl: The Atltuner (on fm1-dock / Dinghy / Felucca): the host, the modules, the update
 loader and an installable .fwsc package.
 
   tools/build.py [--release X.Y[-suffix]] [--modules cs1,scintilla,obervave] [--no-package]
       the version (APP_VER: the boot log, OPTIONS > ABOUT) is X.Y for a release, with the source as APP_BUILD;
       any other build's is its source: git's short hash, + with changes not committed (2dcbfbf+)
   tools/build.py --board smk37 [--model pro|elite|mke] [--release X.Y] ...
-      the M-Vave SMK-37 (Pro, Elite, MKE-P37: one keyboard, three model names): fm1-dock for its panel and flash
-      (-DBOARD_SMK37=1, firmware/hal/fm1_flash_map.h), identity "SMK-37 Pro_921" (the model's name), the package
-      build/fm1-dock-smk37.fwsc (-elite, -mke; fm1-dock-X.Y-smk37.fwsc for a release), BLE-MIDI as on the FM-1
+      the M-Vave SMK-37 (Pro, Elite, MKE-P37: one keyboard, three model names): atlatl for its panel and flash
+      (-DBOARD_SMK37=1, firmware/hal/fm1_flash_map.h), identity "SMK-37 Pro_922" (the model's name), the package
+      build/atlatl-smk37.fwsc (-elite, -mke; atlatl-X.Y-smk37.fwsc for a release), BLE-MIDI as on the FM-1
       (HX at flash 0x65000). No boot slot, no solo app on it yet. The FM-1 build gets no new flag: it stays byte
       for byte as it was
   tools/build.py --modules PATH/TO/MODULE --name NAME --app-name "NAME" --identity FM-1_9NN [--pack FILE]
-      a solo app: fm1-dock with one module of its own (a directory anywhere: HB_MOUNT for Docker),
+      a solo app: atlatl with one module of its own (a directory anywhere: HB_MOUNT for Docker),
       its own name for the outputs and the crash / rescue screens, its own package identity, and
       FILE (the module's data: FM-1 SID's tune pack) right after the modules, where the module finds it
 
-Outputs in build/: fm1-dock.bin (the app: the host, the slot table, the modules), fm1-dock_xip.bin
+Outputs in build/: atlatl.bin (the app: the host, the slot table, the modules), atlatl_xip.bin
 (the same as fm1-emu / fm1-live --bin take it), modules/*.dock, loader/ota.bin (update loader),
-fm1-dock.fwsc (package; --no-package skips it, and the SDK). See README.md for the toolchain and
+atlatl.fwsc (package; --no-package skips it, and the SDK). See README.md for the toolchain and
 the SDK.
 
 The JieLi toolchain is Linux x86-64 only. JIELI_TOOLCHAIN points at it; on
@@ -66,8 +66,8 @@ SDK_SHA256 = {
 BOARD = "fm1"                       # fm1 (default) or smk37 (--board, or $BOARD)
 MODELS = {"pro": "SMK-37 Pro", "elite": "SMK-37 Elite", "mke": "MKE-P37"}   # smk37: the model's name (--model)
 BOARD_DEFS = []                     # the SMK's -D flags (the FM-1 build gets none: byte-identical)
-PRODUCT = "FM-1_921"                # fm1-dock's own, for every release (free on the Firmware Hub, 2026-10-26: 95N, as
-                                    # it was, is other firmwares'); FM-1_9NN as OUR_LOADER in the installer wants
+PRODUCT = "FM-1_922"                # Atl-Atl's own (fm1-dock is 921); the FM-1_9NN form is what the installers'
+                                    # update loader knows and can resume
 VERSION = None                      # APP_VER for release builds (X.Y); else the source's (git_build)
 
 
@@ -191,9 +191,10 @@ def build_loader():
 
 # ---- app
 
-APP = "fm1-dock"                    # the outputs' name (--name) (build/fm1-dock.bin, .fwsc, .syms, ...)
+APP = "atlatl"                      # the outputs' name (--name) (build/atlatl.bin, .fwsc, .syms, ...)
 HOST = "dock"
-PACKAGE = ["cs1", "scintilla", "obervave"]   # the modules in the package (all of modules/ no longer fits its app slot)                       # the host's source: firmware/src/dock.c
+PACKAGE = ["atltuner"]              # the only module in Atl-Atl's package: a dedicated firmware
+HOST_PACKAGE = ["cs1", "scintilla", "obervave"]   # --multi: the upstream fm1-dock host's modules (tests/development)
 SLOT_TABLE = 0x02030000             # firmware/src/dock.c HB_TABLE_AT (flash 0x34000)
 SLOT_FIRST = SLOT_TABLE + 0x1000
 HX_XIP = 0x02084000                 # firmware/src/ble/hx.h HX_AT (flash 0x88000): BLE-MIDI, a unit of its own (SMK-37: main)
@@ -384,9 +385,9 @@ def mmio_check():
 
 
 BOOT_SLOT = False                   # --boot-slot: the boot slot is in (a developer's build)
-APP_NAME = None                     # --app-name: the crash and rescue screens' name (dock.c's own: FM1-DOCK)
-SOLO = False                        # --name: a solo app (a new install starts its module, not the sine; no BLE-MIDI:
-                                    # its module and its data take HX's place)
+APP_NAME = None                     # --app-name: the crash and rescue screens' name (dock.c's own: atlatl)
+SOLO = True                         # the default: a dedicated app, ATLTUNER (no picker/OPTIONS, no BLE-MIDI);
+                                    # --multi builds the fm1-dock module host instead
 
 
 def main():
@@ -395,10 +396,12 @@ def main():
     ap.add_argument("--board", choices=("fm1", "smk37"), help="the board: fm1 (default: $BOARD, else fm1) or smk37")
     ap.add_argument("--model", choices=sorted(MODELS), help="smk37: the model's name, pro (default: $MODEL, else pro), "
                     "elite or mke")
-    ap.add_argument("--release", metavar="X.Y", help="release build: version string X.Y (the identity stays fm1-dock's)")
+    ap.add_argument("--release", metavar="X.Y", help="release build: version string X.Y (the identity stays atlatl's)")
     ap.add_argument("--sdk", type=Path, help="JieLi AC79 SDK checkout (default: $AC79_SDK)")
-    ap.add_argument("--modules", help=f"the modules to pack, in slot order (default: {','.join(PACKAGE)}; every "
-                    "other modules/<dir> is built as a .dock to deploy)")
+    ap.add_argument("--multi", action="store_true", help="the fm1-dock module host: its picker, OPTIONS and "
+                    f"package (default: {','.join(HOST_PACKAGE)}); Atl-Atl's default is the solo ATLTUNER firmware")
+    ap.add_argument("--modules", help=f"the modules to pack, in slot order (default: {','.join(PACKAGE)}; with "
+                    "--multi, the module host's; every other modules/<dir> is built as a .dock to deploy)")
     ap.add_argument("--no-package", action="store_true", help="no .fwsc (and no SDK needed): the app and its XIP image")
     ap.add_argument("--no-ble", action="store_true", help="no BLE-MIDI (HX) in the image: no BLUETOOTH line, its "
                     "40 KiB free for modules")
@@ -406,7 +409,7 @@ def main():
                     "slot (tools/hbboot.py), which takes over at power-on; a release has none")
     ap.add_argument("--name", help="the outputs' name (build/NAME.bin, .fwsc, .syms): a solo app's")
     ap.add_argument("--app-name", help="the name on the crash and USB rescue screens")
-    ap.add_argument("--identity", help="the package identity (FM-1_9NN) in place of fm1-dock's")
+    ap.add_argument("--identity", help="the package identity (FM-1_9NN) in place of atlatl's")
     ap.add_argument("--pack", type=Path, help="data for the module, right after the modules (in the app slot)")
     a = ap.parse_args()
     BOARD = (a.board or os.environ.get("BOARD") or "fm1").lower().replace("-", "")
@@ -427,7 +430,7 @@ def main():
     BOOT_SLOT = a.boot_slot
     APP = a.name or APP
     APP_NAME = a.app_name
-    SOLO = bool(a.name)
+    SOLO = bool(a.name) or not a.multi          # Atl-Atl: one app, ATLTUNER; --multi: the fm1-dock host
     if a.identity:
         if not re.fullmatch(r"FM-1_9\d\d", a.identity):
             raise SystemExit(f"--identity {a.identity}: FM-1_9NN (the installers' loader wants 9NN)")
@@ -447,7 +450,8 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     import hbmod
     every = sorted(d for d in (SRC / "modules").iterdir() if d.is_dir() and d.name != "lib" and any(d.glob("*.c")))
-    dirs = [Path(d).resolve() if "/" in d else SRC / "modules" / d for d in (a.modules or ",".join(PACKAGE)).split(",")]
+    pkgs = a.modules or ",".join(HOST_PACKAGE if a.multi else PACKAGE)
+    dirs = [Path(d).resolve() if "/" in d else SRC / "modules" / d for d in pkgs.split(",")]
     ota = build_loader()
     host, syms, dis, rt, hx = build_app()
     errors, notes = check(host, syms, dis, rt)
@@ -462,12 +466,12 @@ def main():
     if errors:
         raise SystemExit("build: checks failed")
     mods = [hbmod.build_module(d) for d in dirs]
-    for d in every if not a.name else []:       # the others as files to deploy (tools/dock.py deploy, the tests)
+    for d in every if not SOLO else []:         # the others as files to deploy (tools/dock.py deploy, the tests)
         if d not in dirs:
             hbmod.build_module(d)
     if (a.pack or a.name) and hx and not a.no_ble:   # (a solo app: its module and its data take HX's place)
         print("note     a solo app (--name / --pack): no BLE-MIDI in this image")
-    if a.no_ble or a.pack or a.name:
+    if a.no_ble or a.pack or a.name or SOLO:     # (a dedicated app: no BLE-MIDI)
         hx = b""
     img = pack_slots(host, mods, hx)
     if a.pack:                                  # the module's data after the last module (its own end + a scan)

@@ -3,7 +3,7 @@
 """fm1-dock in fm1-emu (fm1-live, headless): the host and its modules, end to end.
   ./build.sh --no-package && tests/emu_test.py
 Each case runs the firmware with a key / MIDI script and checks the sound and the host's log.
-The slots are looked up by name in build/fm1-dock.bin's table, so the order may change."""
+The slots are looked up by name in build/atlatl.bin's table, so the order may change."""
 import os
 import re
 import struct
@@ -18,7 +18,7 @@ sys.path.insert(0, str(SRC / "tools"))
 import hbmod  # noqa: E402
 
 OUT = SRC / "build" / "emu"
-APP = SRC / "build" / "fm1-dock_xip.bin"
+APP = SRC / "build" / "atlatl_xip.bin"
 failures = []
 
 
@@ -119,7 +119,7 @@ def rms_left(s, t0, t1):
 
 
 def sym(name):
-    m = re.search(rf"^([0-9a-f]{{8}}) .*\s{name}$", (SRC / "build" / "fm1-dock.syms").read_text(), re.M)
+    m = re.search(rf"^([0-9a-f]{{8}}) .*\s{name}$", (SRC / "build" / "atlatl.syms").read_text(), re.M)
     return int(m.group(1), 16) - 0x01C00000
 
 
@@ -181,7 +181,7 @@ def decode_check():
     emulator's own instruction lengths: the disassembler does not know the FPU's instructions (`<unknown
     instruction>`, two bytes at a time), so its boundaries after one are wrong and would show made-up instructions"""
     emu = Path(os.environ.get("FM1_LIVE", Path.home() / "work/fm1-emu/target/release/fm1-live")).with_name("fm1-emu")
-    for dis in [SRC / "build" / "fm1-dock.dis", *sorted((SRC / "build" / "modules").glob("*/module.dis"))]:
+    for dis in [SRC / "build" / "atlatl.dis", *sorted((SRC / "build" / "modules").glob("*/module.dis"))]:
         name = dis.parent.name if dis.parent.name != "build" else "host"
         mem, asm, starts = {}, {}, []           # the bytes by address, the disassembler's text, its row starts
         for m in map(LINE.match, dis.read_text().splitlines()):
@@ -486,7 +486,7 @@ def niagara_cases():
     # project in the module's bank 1; at the next power-on (NIAGARA again, the last module) it loads back
     flash = OUT / "niagara_flash.bin"
     flash.unlink(missing_ok=True)
-    fw = ("--fwsc", str(SRC / "build" / "fm1-dock.fwsc"), "--flash", str(flash))
+    fw = ("--fwsc", str(SRC / "build" / "atlatl.fwsc"), "--flash", str(flash))
     run("niagara_fresh", pick("NIAGARA"), 4500, extra=fw)   # (the host keeps NIAGARA as the last module)
     fresh = (OUT / "niagara_fresh" / "ram.bin").read_bytes()
     run("niagara_save", "5500:e3:-20", 12000, extra=fw)
@@ -514,12 +514,12 @@ def main():
     # HOME: OPTIONS again, ABOUT the line picked
     at = f"700:8,750:8^,900:e6:{1 + len(names) + O_ABOUT},1100:3,1150:3^"
     _, log = run("about", at, 1700)
-    ver = (re.findall(r"fm1-dock (\S+) boot", log) or ["?"])[-1]
+    ver = (re.findall(r"atlatl (\S+) boot", log) or ["?"])[-1]
     x0, x1 = acc_span("about", 28, 44)
     _, _ = run("about_back", at + ",1500:8,1550:8^", 2000)
     y = 50 + O_ABOUT * 18                   # (dock.c OPT_Y)
     b0, b1 = acc_span("about_back", y, y + 18)
-    n = len(f"fm1-dock {ver}") + (10 if "." in ver else 0)   # (a release's: " (abc1234)" after it)
+    n = len(f"atlatl {ver}") + (10 if "." in ver else 0)   # (a release's: " (abc1234)" after it)
     check("about", re.fullmatch(r"\d\.\d(\.\d)?|[0-9a-f]{7}\+?|unknown", ver) is not None and x0 >= 2 and
           abs(x1 - x0 - 8 * n) <= 8 and acc_span("about_back", 28, 44) == (0, 0) and b1 - b0 >= 30,
           f"ABOUT: fm1-dock {ver} (the boot log) on its page, {x1 - x0} px; HOME: OPTIONS, ABOUT picked ({b1 - b0} px)")
@@ -564,7 +564,7 @@ def main():
         img = bytearray(APP.read_bytes())
         at = dict((n, a) for n, a, _ in slots())["SID"]
         img[at - 0x02000000 + 0x1000] ^= 0x40          # a bit in its code
-        bad = SRC / "build" / "fm1-dock_badcrc_xip.bin"
+        bad = SRC / "build" / "atlatl_badcrc_xip.bin"
         bad.write_bytes(img)
         s, log = run("bad_crc", pick("SID") + ",1600:14,2000:14^", 2500, bad)
         check("bad_crc", "slot refused" in log and "SID" not in log.split("started")[-1] and peak(s, 1.3, 1.8) > 1000,
@@ -620,7 +620,7 @@ def main():
         # (its banks), the host keeps the module and FM-106 its patch (records); the next power-on loads them
         flash = OUT / "fm106_flash.bin"
         flash.unlink(missing_ok=True)
-        fw = ("--fwsc", str(SRC / "build" / "fm1-dock.fwsc"), "--flash", str(flash))
+        fw = ("--fwsc", str(SRC / "build" / "atlatl.fwsc"), "--flash", str(flash))
         run("fm106_save", pick("FM-106") + ",2400:9,2500:9^", 6000, extra=fw)
         _, log = run("fm106_saved", "", 3000, extra=fw)
         ram = (OUT / "fm106_saved" / "ram.bin").read_bytes()
@@ -653,7 +653,7 @@ def main():
         # the next singer (PRESETS), SAVE: its project in the module's bank, there after a power-off
         flash = OUT / "monk_flash.bin"
         flash.unlink(missing_ok=True)
-        fw = ("--fwsc", str(SRC / "build" / "fm1-dock.fwsc"), "--flash", str(flash))
+        fw = ("--fwsc", str(SRC / "build" / "atlatl.fwsc"), "--flash", str(flash))
         run("monk_save", k + ",1800:e6:1,2400:9,2500:9^", 6000, extra=fw)
         _, log = run("monk_saved", "", 3000, extra=fw)
         ram = (OUT / "monk_saved" / "ram.bin").read_bytes()
@@ -832,7 +832,7 @@ def main():
 
     def uac_glitches(case):
         # the firmware's own counts (usb.c `uac`: underruns, overruns, missed at +36) from the run's RAM
-        m = re.search(r"^([0-9a-f]{8}) .*\suac$", (SRC / "build" / "fm1-dock.syms").read_text(), re.M)
+        m = re.search(r"^([0-9a-f]{8}) .*\suac$", (SRC / "build" / "atlatl.syms").read_text(), re.M)
         return struct.unpack_from("<3I", (OUT / case / "ram.bin").read_bytes(), int(m.group(1), 16) - 0x01C00000 + 36)
 
     def usb_same(s, u):

@@ -722,18 +722,18 @@ def _boot_emulator(ms=2000):
     """Boot the emulator for `ms` milliseconds, return path to RAM dump.
 
     Uses dock.live() for the emulator binary (FM1_LIVE env or the repo default).
-    Prefers build/fm1-dock.fwsc (your own build) over the shipped release package.
+    Prefers build/atlatl.fwsc (your own build) over the shipped release package.
     Runs fm1-live in a tempdir (with work/ for its panel output) so it never writes
     to the repo root or overwrites build/emu/ram.bin from tools/dock.py emu.
     """
     import subprocess
     import dock
     emu = str(dock.live())
-    fwsc = SRC / "build" / "fm1-dock.fwsc"
+    fwsc = SRC / "build" / "atlatl.fwsc"
     if not fwsc.exists():
         fwsc = SRC / "docs" / "fm1-dock-0.5.fwsc"
     if not fwsc.exists():
-        sys.exit(f"Firmware not found: need build/fm1-dock.fwsc or docs/fm1-dock-0.5.fwsc")
+        sys.exit(f"Firmware not found: need build/atlatl.fwsc or docs/fm1-dock-0.5.fwsc")
     wd = Path(tempfile.mkdtemp(prefix="fm1dap_"))
     (wd / "work").mkdir()
     ram = wd / "ram.bin"
@@ -750,7 +750,7 @@ def _boot_emulator(ms=2000):
 def main():
     global _cli_args
     ap = argparse.ArgumentParser(description="fm1-dock DAP debug adapter")
-    ap.add_argument("--port", help="MIDI port name (default: auto-detect Felucca/FM1-DOCK/FM-1)")
+    ap.add_argument("--port", help="MIDI port name (default: auto-detect Felucca/Atl-Atl/FM-1)")
     ap.add_argument("--ram", metavar="FILE", help="offline: read from emulator RAM dump instead of USB-MIDI")
     ap.add_argument("--emu", action="store_true", help="boot the emulator, then attach to its RAM dump")
     ap.add_argument("--mock", action="store_true", help="offline: use synthetic data (no hardware needed)")

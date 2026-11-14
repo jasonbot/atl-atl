@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""fm1-dock on the computer.
+"""atlatl on the computer.
 
-  tools/dock.py emu [--bin build/fm1-dock_xip.bin | --fwsc build/fm1-dock.fwsc] [--ms 3000] [--keys SCRIPT]
+  tools/dock.py emu [--bin build/atlatl_xip.bin | --fwsc build/atlatl.fwsc] [--ms 3000] [--keys SCRIPT]
                       [--deploy MOD.dock [--at MS]] [--flash FLASH.bin] [--usb [HZ]] [--out DIR]
                       [--flaky-core1 RATE [--seed N]]  (a unit whose second core misreads RAM)
       runs the firmware in fm1-emu's fm1-live (headless, JIT): DIR/audio.wav, DIR/panel.png
@@ -54,7 +54,7 @@ def live():
 
 
 def nv_addr(ram):
-    syms = SRC / "build" / "fm1-dock.syms"
+    syms = SRC / "build" / "atlatl.syms"
     if syms.exists():
         m = re.search(r"^([0-9a-f]{8}) .*\shb_nv$", syms.read_text(), re.M)
         if m:
@@ -66,7 +66,7 @@ def nv_addr(ram):
 def read_log(ram):
     o = nv_addr(ram)
     if o is None or struct.unpack_from("<I", ram, o)[0] != NV_MAGIC:
-        return "no fm1-dock state in this RAM dump"
+        return "no atlatl state in this RAM dump"
     (log_w,) = struct.unpack_from("<I", ram, o + 4)
     ring = ram[o + 8:o + 8 + LOG_SIZE]
     if log_w <= LOG_SIZE:
@@ -191,9 +191,9 @@ def find_lcd(img):
 
 
 BOOT_WARNING = """This is a boot firmware: it takes over the FM-1 at every power-on, with its own USB.
-If its USB does not answer, no installer reaches the FM-1 while it runs. The way back to fm1-dock:
+If its USB does not answer, no installer reaches the FM-1 while it runs. The way back to atlatl:
   - hold HOME while switching on (keep holding while STARTING shows), or
-  - switch off while STARTING shows, twice in a row: the third start stays in fm1-dock.
+  - switch off while STARTING shows, twice in a row: the third start stays in atlatl.
 Deploy it only if you know it answers the installers (test it in fm1-emu first: tools/dock.py emu).
 Add --boot to deploy it anyway."""
 
@@ -230,10 +230,10 @@ def device(a):
     elif a.cmd == "info":
         i = hd.info(p)
         if not i:
-            raise SystemExit("no INFO from this fm1-dock (an older one): tools/dock.py modules and logs instead")
+            raise SystemExit("no INFO from this atlatl (an older one): tools/dock.py modules and logs instead")
         ver = i["version"] + (f" ({i['build']})" if i["build"] != i["version"] else "")
         size = f", {i['flash_size'] // 1024} KiB" if i["flash_size"] else ""
-        print(f"fm1-dock {ver} on {i['model']}: {i['soc']} {i['mhz']} MHz, {i['cores']}CPU ({i['cpu1']}), reset {i['reset']:02x}")
+        print(f"atlatl {ver} on {i['model']}: {i['soc']} {i['mhz']} MHz, {i['cores']}CPU ({i['cpu1']}), reset {i['reset']:02x}")
         print(f"flash {i['flash_id']:06X}{size}; add-ons {i['free'] // 1024} KiB free (largest {i['largest'] // 1024} KiB); "
               f"module RAM {i['mod_ram'] // 1024} KiB, {i['mod_ram_used'] // 1024} KiB used")
         print(f"BLE address {i['ble_addr'] or '- (not made yet)'}")
@@ -258,7 +258,7 @@ def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     e = sub.add_parser("emu")
-    e.add_argument("--bin", default=str(SRC / "build" / "fm1-dock_xip.bin"))
+    e.add_argument("--bin", default=str(SRC / "build" / "atlatl_xip.bin"))
     e.add_argument("--fwsc")
     e.add_argument("--ms", type=int, default=3000)
     e.add_argument("--keys", default="")

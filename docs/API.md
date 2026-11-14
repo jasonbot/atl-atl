@@ -1,6 +1,7 @@
-# Dinghy API
+# Atl-Atl platform API (Dinghy / Felucca)
 
-Everything [platform.c](../firmware/src/platform.c) gives your app. One compilation unit: `dinghy.c` includes
+Everything [platform.c](../firmware/src/platform.c) gives your app. Atl-Atl is built on the fm1-dock host and the
+Felucca/Dinghy platform; this is their API, kept here because modules and apps use it directly. One compilation unit: `dinghy.c` includes
 `platform.c` first, so all of this is just there. Nothing here is a library you link against; read the source
 when in doubt, it is short.
 

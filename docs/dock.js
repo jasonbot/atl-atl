@@ -88,7 +88,7 @@ export function parse(msg) {                    // a reply: {cmd, seq, d}, or nu
 }
 
 export function moduleInfo(blob) {              // a .dock's header (hb_file_t), or throws
-  if (blob.length < 80 || rd32(blob, 0) !== HRBR_MAGIC) throw new Error("not a fm1-dock module file (.dock)");
+  if (blob.length < 80 || rd32(blob, 0) !== HRBR_MAGIC) throw new Error("not an atlatl module file (.dock)");
   const flags = rd32(blob, 8);
   return { abi: rd32(blob, 4), flags, name: cstr(blob, 12, 36), version: rd32(blob, 36),
     code: rd32(blob, 40), data: rd32(blob, 44), bss: rd32(blob, 48), rt: rd32(blob, 52),
@@ -180,7 +180,7 @@ export class Dock {
       });
       if (got) return got;
     }
-    throw new Error(`no answer from the FM-1 (command 0x${cmd.toString(16).padStart(2, "0")}): is fm1-dock running?`);
+    throw new Error(`no answer from the FM-1 (command 0x${cmd.toString(16).padStart(2, "0")}): is atlatl running?`);
   }
 
   async hello() {
@@ -241,8 +241,8 @@ export class Dock {
   async deploy(blob, progress = () => {}, run = null) {
     const info = moduleInfo(blob);
     const h = await this.hello();
-    if (h.abi !== info.abi) throw new Error(`the FM-1's fm1-dock speaks ABI ${h.abi}, ${info.name} was built for ${info.abi}`);
-    if (!info.boot && blob.length > h.maxFile) throw new Error(`${info.name}: ${blob.length} B, fm1-dock takes up to ${h.maxFile} B`);
+    if (h.abi !== info.abi) throw new Error(`the FM-1's atlatl speaks ABI ${h.abi}, ${info.name} was built for ${info.abi}`);
+    if (!info.boot && blob.length > h.maxFile) throw new Error(`${info.name}: ${blob.length} B, atlatl takes up to ${h.maxFile} B`);
     const begin = cat(u32(blob.length), u32(crc32(blob)), name24(info.name));
     let d = await this.ask(CMD.BEGIN, begin, { timeout: 2000, tries: 4 });
     if (d[0]) throw new Error(`${info.name}: ${status(d)} (at BEGIN)`);
