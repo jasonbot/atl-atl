@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Publish the web installer on GitHub Pages.
 #   push to main that changes web/   -> the site from main, with the package of the latest release
-#   workflow_dispatch (version, ref) -> download audiobase-VERSION.fwsc from the release vVERSION (blank: the latest),
+#   workflow_dispatch (version, ref) -> download atlatl-VERSION.fwsc from the release vVERSION (blank: the latest),
 #                                       check them against its SHA256SUMS, web/make_site.py --release, deploy to Pages
 # release.yml starts it after it made the release. With no release yet there is nothing to publish and it stops.
 # Settings -> Pages -> Source must be "GitHub Actions".
@@ -93,7 +93,7 @@ jobs:
           set -euo pipefail
           rel="build/release-$VERSION"
           mkdir -p "$rel"
-          for f in "audiobase-$VERSION.fwsc" SHA256SUMS; do
+          for f in "atlatl-$VERSION.fwsc" SHA256SUMS; do
             if ! gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "$f" --dir "$rel" --clobber; then
               echo "::error title=No $f in v$VERSION::The release v$VERSION does not exist or has no asset $f. Push the tag v$VERSION so release.yml builds it, then run pages.yml again."
               exit 1
@@ -106,7 +106,7 @@ jobs:
           set -euo pipefail
           python3 web/make_site.py --release "build/release-$VERSION"
           for f in index.html installer.js fm1ota.js fm1pkg.js firmware/manifest.json firmware/SHA256SUMS \
-                   firmware/LICENSE firmware/LICENSING.md "firmware/audiobase-$VERSION.fwsc"; do
+                   firmware/LICENSE firmware/LICENSING.md "firmware/atlatl-$VERSION.fwsc"; do
             if [ ! -s "build/site/$f" ]; then
               echo "::error::build/site/$f is missing"
               exit 1

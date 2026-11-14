@@ -170,6 +170,7 @@ jobs:
           body_path: release-body.md
 
       - name: Publish the site (pages.yml)
+        continue-on-error: true          # the release stands even if Pages is not configured yet
         if: ${{ !contains(env.VERSION, '-') }}
         env:
           GH_TOKEN: ${{ github.token }}
