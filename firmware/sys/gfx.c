@@ -226,15 +226,6 @@ static void ui_text(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const felucc
     lcd_sync();
 }
 
-static void ui_text_bottom(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const felucca_font_t *f,
-                           const char *s, uint16_t c)
-{
-    ui_pixels(x, y, w, h);
-    cv_text(0, (int32_t)h - (int32_t)f->h, f, s, c);
-    cv_blit(x, y);
-    lcd_sync();
-}
-
 static void ui_fill(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t c)
 {
     cv_begin(w, h, c);

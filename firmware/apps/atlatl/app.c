@@ -334,14 +334,14 @@ static void draw_bpm(int bpm, int clk)
     char b[16];
     put_u(b, bpm);
     if (clk) str_cat(b, " CLK", sizeof b);
-    ui_text_bottom(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_S, b, C_BPM);
+    ui_text(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_S, b, C_BPM, 0);
 }
 
 static void draw_sample(uint32_t frames, int recording)
 {
     char a[16], b[8];
     if (!frames && !recording) {
-        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, "EMPTY", C_LINK);
+        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, "EMPTY", C_LINK, 0);
         return;
     }
     {   uint32_t t = (frames * 10u + FW_FS / 2u) / FW_FS;
@@ -352,13 +352,13 @@ static void draw_sample(uint32_t frames, int recording)
         str_cat(a, "s", sizeof a);
     }
     if (recording) {
-        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, a, C_LINK);
+        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, a, C_LINK, 0);
     } else {
         b[0] = 0;
         str_cat(b, "1/", sizeof b);
         { char c[8]; put_u(c, (int32_t)loop_div); str_cat(b, c, sizeof b); }
-        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 17u, &FONT_S, a, C_LINK);
-        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y + 17u, UI_SAMPLE_W, 17u, &FONT_S, b, C_LINK);
+        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 17u, &FONT_S, a, C_LINK, 0);
+        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y + 17u, UI_SAMPLE_W, 17u, &FONT_S, b, C_LINK, 0);
     }
 }
 
