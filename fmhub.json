@@ -1,0 +1,9 @@
+{
+  "what": "A USB audio interface and autotuner for the M-VAVE FM-1. Play computer audio into it, hold a key to tune it, and use the three-second sampler, tempo, ARP mask and latch.",
+  "author": "Jason Scheirer",
+  "kinds": [
+    "other"
+  ],
+  "image": "docs/card.png",
+  "color": "#ABCD37"
+}

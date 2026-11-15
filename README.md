@@ -15,9 +15,9 @@ identity (`FM-1_922`) and its own UI. The upstream authors are credited below; n
 
 Source: [github.com/jasonbot/atl-atl](https://github.com/jasonbot/atl-atl).
 
-> **Status:** builds, passes the host simulator, and its simulator output has been measured (220 Hz in, C4 held,
-> 261.3 Hz out). The USB sink is FM1_AudioBase's hardware-tested path, but this exact build has not been run on an
-> FM-1 here. Treat the first install as a bench test.
+> **Status:** builds, passes the host simulator, and has been installed and updated on a real FM-1 here. The USB
+> identity and audio path come up. The USB sink is FM1_AudioBase's hardware-tested path; the autotuner is still a
+> work in progress, so treat the first listen as a bench test.
 
 ## What it does
 
