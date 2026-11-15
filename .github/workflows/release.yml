@@ -153,7 +153,7 @@ jobs:
 
           Install with the command-line installer: `python3 tools/fm1_install.py atlatl-@VERSION@.fwsc`.
 
-          `atlatl-@VERSION@.fwsc` is the package (48 kHz); `SHA256SUMS` lists its SHA-256. The package holds three JieLi AC79 SDK files (Apache-2.0); `LICENSE`, `LICENSING.md` and `LICENSES.zip` carry every licence (GPL-3.0-only; Terminus font, OFL 1.1; JieLi SDK files, Apache-2.0). The complete source of this release is the tag v@VERSION@.
+          `atlatl-@VERSION@.fwsc` is the package (48 kHz); `SHA256SUMS` lists its SHA-256. The package holds three JieLi AC79 SDK files (Apache-2.0); `LICENSE`, `LICENSING.md` and `LICENSES.zip` carry every licence (GPL-3.0-only; Geist fonts, OFL 1.1; JieLi SDK files, Apache-2.0). The complete source of this release is the tag v@VERSION@.
 
           **Installing custom firmware is at your own risk.** Atl-Atl is provided as is, without any warranty.
           EOT

@@ -308,7 +308,7 @@ static void draw_note(int note, int cents, int voiced)
         note_name(n, target);
     else
         str_cpy(n, "---", sizeof n);
-    ui_text(UI_NOTE_X, UI_NOTE_Y, UI_NOTE_W, 36u, &FONT_L, n, target >= 0 ? C_HI : C_DIM, 1);
+    ui_text(UI_NOTE_X, UI_NOTE_Y, UI_NOTE_W, 36u, &FONT_S, n, target >= 0 ? C_HI : C_DIM, 1);
     if (voiced) {
         note_name(n, note);
         b[0] = 0;
@@ -332,9 +332,9 @@ static void draw_bpm_mark(int tempo, int beat)
 static void draw_bpm(int bpm, int clk)
 {
     char b[16];
+    (void)clk;                         /* clock mode is shown by the BPM mark colour/beat */
     put_u(b, bpm);
-    if (clk) str_cat(b, " CLK", sizeof b);
-    ui_text(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_S, b, C_BPM, 0);
+    ui_text(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_L, b, C_BPM, 0);
 }
 
 static void draw_sample(uint32_t frames, int recording)
@@ -366,15 +366,15 @@ static void draw_knobs(void)
 {
     char b[8];
     put_u(b, p_speed);
-    ui_text(7u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    ui_text(7u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
     put_u(b, p_mix);
     str_cat(b, "%", sizeof b);
-    ui_text(67u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    ui_text(67u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
     put_u(b, p_correct);
     str_cat(b, "%", sizeof b);
-    ui_text(126u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    ui_text(126u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
     put_u(b, p_oct);
-    ui_text(186u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    ui_text(186u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
 }
 
 static void draw_modes(int loop, int mask)

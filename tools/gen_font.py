@@ -5,8 +5,8 @@
 """Render the bitmap fonts to a C header (assets/fonts/):
   S  labels / units / status   Latin-1 32..255 at 1x
   L  large values / titles     32..95 (digits, signs, capitals), the same glyphs at 2x
-Terminus 8x16 (BDF, SIL OFL 1.1). TTF fonts also work through render()
-(anti-aliased, tabular figures via the OpenType `tnum` feature).
+Geist Mono (ASCII) and Geist Serif (BPM numerals), SIL OFL 1.1, rendered through Pillow
+with anti-aliasing; tabular figures via the OpenType `tnum` feature.
 
 Glyph format: per glyph an advance width, a bitmap width and an offset; the
 bitmap starts FONT_PAD pixels left of the pen position (room for side
@@ -21,8 +21,8 @@ from PIL import Image, ImageDraw, ImageFont
 FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 # (name, file, px, scale, pixel, first, last): pixel fonts are rendered without
 # anti-aliasing at their design size and enlarged by an integer factor
-SIZES = [("S", "ter-u16n.bdf", 16, 1, True, 32, 255),   # Latin-1 (Hügelton needs the umlaut)
-         ("L", "ter-u16n.bdf", 16, 2, True, 32, 95)]   # values / titles: digits, signs, capitals
+SIZES = [("S", "GeistMono-Regular.ttf", 15, 1, False, 32, 126),   # printable ASCII
+         ("L", "GeistSerif-Regular.ttf", 28, 1, False, 48, 57)]    # BPM numerals only
 PAD = 2
 
 
@@ -40,7 +40,7 @@ def upscale(px_, w, h, scale):
 
 
 def render_bdf(path, scale, first, last):
-    """BDF bitmap font (Terminus 8x16): exact pixels, cell = the font bounding box."""
+    """BDF bitmap font: exact pixels, cell = the font bounding box."""
     lines = path.read_text(errors="replace").splitlines()
     fbb = next(l for l in lines if l.startswith("FONTBOUNDINGBOX")).split()
     cw, ch, fx, fy = int(fbb[1]), int(fbb[2]), int(fbb[3]), int(fbb[4])

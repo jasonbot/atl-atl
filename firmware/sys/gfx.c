@@ -68,6 +68,24 @@ static inline void cv_pset(int32_t x, int32_t y, uint16_t c)
         cv_px[(uint32_t)y * cv_w + (uint32_t)x] = swap16(c);
 }
 
+/* Glyph coverage is 0..15. Blend it over whatever is already in the canvas, not over black, so the same
+ * anti-aliased font works on the light knob boxes and the note gradient. */
+static void cv_pset_a(int32_t x, int32_t y, uint16_t fg, uint32_t a)
+{
+    uint16_t *p, bg;
+    uint32_t r, g, b;
+    y += cv_oy;
+    if (a == 0 || (uint32_t)x >= cv_w || (uint32_t)y >= cv_h)
+        return;
+    p = &cv_px[(uint32_t)y * cv_w + (uint32_t)x];
+    if (a >= 15) { *p = swap16(fg); return; }
+    bg = swap16(*p);
+    r = (((bg >> 11) & 31u) * (15u - a) + ((fg >> 11) & 31u) * a + 7u) / 15u;
+    g = (((bg >> 5) & 63u) * (15u - a) + ((fg >> 5) & 63u) * a + 7u) / 15u;
+    b = ((bg & 31u) * (15u - a) + (fg & 31u) * a + 7u) / 15u;
+    *p = swap16((uint16_t)((r << 11) | (g << 5) | b));
+}
+
 static void cv_rect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c)
 {
     int32_t x1 = x + w, y1 = y + h + cv_oy, i;
@@ -121,10 +139,6 @@ static uint32_t glyph(const felucca_font_t *f, uint32_t ch)
 /* text, alpha-blended onto black with colour c; returns the end x */
 static int32_t cv_text(int32_t x, int32_t y, const felucca_font_t *f, const char *s, uint16_t c)
 {
-    uint16_t ramp[16];
-    uint32_t r = c >> 11, g = (c >> 5) & 63u, b = c & 31u, a;
-    for (a = 0; a < 16u; a++)
-        ramp[a] = (uint16_t)(((r * a / 15u) << 11) | ((g * a / 15u) << 5) | (b * a / 15u));
     for (; *s; s++) {
         uint32_t gi = glyph(f, (uint8_t)*s), gx, gy, w, bpr;
         const uint8_t *gd;
@@ -136,7 +150,7 @@ static int32_t cv_text(int32_t x, int32_t y, const felucca_font_t *f, const char
                 uint32_t sx = gx >> f->sh, v = gd[(gy >> f->sh) * bpr + sx / 2u];
                 v = (sx & 1u) ? (v & 15u) : (v >> 4);
                 if (v)
-                    cv_pset(x - f->pad + (int32_t)gx, y + (int32_t)gy, ramp[v]);
+                    cv_pset_a(x - f->pad + (int32_t)gx, y + (int32_t)gy, c, v);
             }
         x += f->adv[gi];
     }
