@@ -2,6 +2,8 @@
 
 <p align="center"><b>The M-VAVE FM-1 as a USB audio sink and a key-targeted autotuner.</b></p>
 
+<p align="center"><img src="docs/card.png" width="240" alt="Atl-Atl screen: selected note C4, sample, modes, BPM and settings"></p>
+
 Atl-Atl is its own firmware. It turns the FM-1 into a class-compliant USB audio device: the computer plays into it,
 the FM-1 tunes that audio to the note you hold on its keyboard, and the result comes out of the speaker or
 headphones. The four knobs shape the effect, **SELECT** sets the tempo, and the screen shows the held note, the
