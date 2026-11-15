@@ -596,7 +596,11 @@ static void app_frame(const fw_input_t *in)
         tempo_recompute();
     }
     if (in->pressed & FW_BIT(FW_BTN_ARP)) p_mask = !p_mask;
-    if (in->pressed & FW_BIT(FW_BTN_FX)) p_latch = !p_latch;
+    if (in->pressed & FW_BIT(FW_BTN_FX)) {
+        p_latch = !p_latch;
+        if (!p_latch)
+            target_from_held();          /* a latched target must not keep tuning after latch is switched off */
+    }
     if (in->pressed & FW_BIT(FW_BTN_EDIT)) { p_fold = !p_fold; params_changed(); }
     if (in->pressed & FW_BIT(FW_BTN_SAVE)) save_cfg();
 
