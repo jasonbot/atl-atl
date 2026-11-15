@@ -12,8 +12,9 @@ from pathlib import Path
 SIDE = 240
 # The live icons in assets/ui.svg. These are cropped from the rendered background and drawn again at 100%, or
 # faintly when their mode is off.
-ICONS = (("REPEAT", (11, 145, 52, 180)), ("ONCE", (61, 145, 113, 180)),
-         ("REC", (170, 145, 228, 162)), ("LATCH", (203, 7, 235, 38)), ("LINK", (131, 104, 170, 124)))
+ICONS = (("REPEAT", (17, 145, 48, 162)), ("ONCE", (61, 145, 90, 164)),
+         ("MASK", (103, 147, 133, 163)), ("REC", (170, 145, 228, 162)),
+         ("LATCH", (203, 7, 235, 38)), ("LINK", (131, 104, 170, 124)))
 
 
 def rgb565(r, g, b):

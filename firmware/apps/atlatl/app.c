@@ -281,8 +281,8 @@ static void load_cfg(void)
 #define UI_KNOB_Y 209u
 #define UI_MODES_X 0u
 #define UI_MODES_Y 138u
-#define UI_MODES_W 120u
-#define UI_MODES_H 42u
+#define UI_MODES_W 140u
+#define UI_MODES_H 36u
 #define UI_REC_X 160u
 #define UI_REC_Y 135u
 #define UI_REC_W 80u
@@ -319,30 +319,32 @@ static void draw_bpm(int bpm, int clk)
     char b[16];
     put_u(b, bpm);
     if (clk) str_cat(b, " CLK", sizeof b);
-    ui_text(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_S, b, clk ? C_YELLOW : C_HI, 1);
+    ui_text_bottom(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_S, b, C_BPM);
 }
 
 static void draw_sample(uint32_t frames, int recording)
 {
-    char a[16], b[16];
+    char a[16], b[8];
     if (!frames && !recording) {
-        str_cpy(a, "EMPTY", sizeof a);
-        b[0] = 0;
-    } else {
-        uint32_t t = (frames * 10u + FW_FS / 2u) / FW_FS;
+        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, "EMPTY", C_LINK);
+        return;
+    }
+    {   uint32_t t = (frames * 10u + FW_FS / 2u) / FW_FS;
         a[0] = 0;
         { char c[8]; put_u(c, (int32_t)t / 10); str_cat(a, c, sizeof a); }
         str_cat(a, ".", sizeof a);
         { char c[8]; put_u(c, (int32_t)t % 10); str_cat(a, c, sizeof a); }
         str_cat(a, "s", sizeof a);
-        b[0] = 0;
-        if (!recording) {
-            str_cat(b, "1/", sizeof b);
-            { char c[8]; put_u(c, (int32_t)loop_div); str_cat(b, c, sizeof b); }
-        }
     }
-    ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 17u, &FONT_S, a, C_HI, 1);
-    ui_text(UI_SAMPLE_X, UI_SAMPLE_Y + 17u, UI_SAMPLE_W, 17u, &FONT_S, b, recording ? C_RED : C_GREEN, 1);
+    if (recording) {
+        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, a, C_LINK);
+    } else {
+        b[0] = 0;
+        str_cat(b, "1/", sizeof b);
+        { char c[8]; put_u(c, (int32_t)loop_div); str_cat(b, c, sizeof b); }
+        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 17u, &FONT_S, a, C_LINK);
+        ui_text_bottom(UI_SAMPLE_X, UI_SAMPLE_Y + 17u, UI_SAMPLE_W, 17u, &FONT_S, b, C_LINK);
+    }
 }
 
 static void draw_knobs(void)
@@ -360,13 +362,15 @@ static void draw_knobs(void)
     ui_text(186u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
 }
 
-static void draw_modes(int loop)
+static void draw_modes(int loop, int mask)
 {
     ui_fill(UI_MODES_X, UI_MODES_Y, UI_MODES_W, UI_MODES_H, C_BLACK);
-    ui_icon(FW_UI_REPEAT_X, FW_UI_REPEAT_Y - 2u, FW_UI_REPEAT_W, FW_UI_REPEAT_H,
+    ui_icon(FW_UI_REPEAT_X, FW_UI_REPEAT_Y - 4u, FW_UI_REPEAT_W, FW_UI_REPEAT_H,
             FW_UI_REPEAT, loop ? 255u : UI_OFF_ALPHA);
-    ui_icon(FW_UI_ONCE_X, FW_UI_ONCE_Y - 2u, FW_UI_ONCE_W, FW_UI_ONCE_H,
+    ui_icon(FW_UI_ONCE_X, FW_UI_ONCE_Y - 4u, FW_UI_ONCE_W, FW_UI_ONCE_H,
             FW_UI_ONCE, loop ? UI_OFF_ALPHA : 255u);
+    ui_icon(FW_UI_MASK_X, FW_UI_MASK_Y - 4u, FW_UI_MASK_W, FW_UI_MASK_H,
+            FW_UI_MASK, mask ? 255u : UI_OFF_ALPHA);
 }
 
 static void draw_rec(int recording)
@@ -397,7 +401,7 @@ static void draw_all(int note, int cents, int voiced, int play)
     draw_knobs();
     draw_bpm(tempo_now(), clock_active);
     draw_sample(rec ? s_w : s_len, rec);
-    draw_modes(p_loop);
+    draw_modes(p_loop, p_mask);
     draw_rec(rec);
     draw_latch(p_latch);
     draw_link(play);
@@ -444,17 +448,13 @@ static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
             s_frames = frames; s_div = loop_div; sample_ms = now;
         }
     }
-    if (p_loop != s_loop) {
-        draw_modes(p_loop);
-        s_loop = p_loop;
+    if (p_loop != s_loop || p_mask != s_mask) {
+        draw_modes(p_loop, p_mask);
+        s_loop = p_loop; s_mask = p_mask;
     }
     if (p_latch != s_latch) {
         draw_latch(p_latch);
         s_latch = p_latch;
-    }
-    if (p_mask != s_mask) {
-        /* MASK has no SVG slot; its LED and the ARP button carry that state. */
-        s_mask = p_mask;
     }
     if (play != s_play) {
         draw_link(play);

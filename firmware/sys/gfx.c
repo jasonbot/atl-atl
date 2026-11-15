@@ -34,6 +34,8 @@ static int32_t cv_oy;            /* y offset for graph drawing */
 #define C_RED RGB(255, 0, 0)
 #define C_YELLOW RGB(255, 204, 0)
 #define C_LATCH RGB(255, 238, 170)
+#define C_BPM RGB(212, 255, 42)
+#define C_LINK RGB(170, 212, 0)
 
 static inline uint16_t swap16(uint32_t c) { return (uint16_t)(((c >> 8) & 0xFFu) | ((c & 0xFFu) << 8)); }
 
@@ -220,6 +222,15 @@ static void ui_text(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const felucc
     else if (align == 2)
         tx = (int32_t)w - tw;
     cv_text(tx, ((int32_t)h - (int32_t)f->h) / 2, f, s, c);
+    cv_blit(x, y);
+    lcd_sync();
+}
+
+static void ui_text_bottom(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const felucca_font_t *f,
+                           const char *s, uint16_t c)
+{
+    ui_pixels(x, y, w, h);
+    cv_text(0, (int32_t)h - (int32_t)f->h, f, s, c);
     cv_blit(x, y);
     lcd_sync();
 }

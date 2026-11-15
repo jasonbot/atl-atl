@@ -24,10 +24,10 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="140.00714"
-     inkscape:cy="176.06959"
-     inkscape:window-width="1770"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="217.08178"
+     inkscape:cy="250.3158"
+     inkscape:window-width="1771"
      inkscape:window-height="1359"
      inkscape:window-x="26"
      inkscape:window-y="23"
@@ -272,6 +272,17 @@
          x="15.775782"
          y="43.91589"
          style="stroke-width:2.22323;fill:#cdde87">➡</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.8442px;line-height:12.2635px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0.82416px;word-spacing:-1.30438px;writing-mode:lr-tb;direction:ltr;fill:#008080;stroke:none;stroke-width:3.1272;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       x="27.02405"
+       y="45.348953"
+       id="mask-mode"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         x="27.02405"
+         y="45.348953"
+         style="stroke-width:3.1272;fill:#008080">↝</tspan></text>
     <rect
        style="fill:url(#linearGradient14);stroke:#cccccc;stroke-width:0.125;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="selected-note"
