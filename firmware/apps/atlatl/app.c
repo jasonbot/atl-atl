@@ -266,9 +266,41 @@ static void load_cfg(void)
 }
 
 /* ---- screen ---- */
-static void draw_pitch(int note, int cents, int voiced)
+/* The UI background is assets/ui.svg, rasterized to app/ui.png at 240 x 240. The SVG's named rectangles are the
+ * live text slots; the four bottom boxes keep their labels and get their values below. */
+#define UI_NOTE_X 9u
+#define UI_NOTE_Y 66u
+#define UI_NOTE_W 95u
+#define UI_PITCH_Y 103u
+#define UI_BPM_X 174u
+#define UI_BPM_Y 60u
+#define UI_BPM_W 64u
+#define UI_SAMPLE_X 174u
+#define UI_SAMPLE_Y 97u
+#define UI_SAMPLE_W 64u
+#define UI_KNOB_Y 209u
+#define UI_MODES_X 0u
+#define UI_MODES_Y 140u
+#define UI_MODES_W 120u
+#define UI_MODES_H 44u
+#define UI_REC_X 160u
+#define UI_REC_Y 135u
+#define UI_REC_W 80u
+#define UI_REC_H 35u
+#define UI_LATCH_X 199u
+#define UI_LATCH_Y 0u
+#define UI_LATCH_W 41u
+#define UI_LATCH_H 45u
+#define UI_OFF_ALPHA 13u                 /* 5% opacity: 95% transparent when a mode is off */
+
+static void draw_note(int note, int cents, int voiced)
 {
-    char b[24], n[8];
+    char n[8], b[24];
+    if (target >= 0)
+        note_name(n, target);
+    else
+        str_cpy(n, "---", sizeof n);
+    ui_text(UI_NOTE_X, UI_NOTE_Y, UI_NOTE_W, 36u, &FONT_L, n, target >= 0 ? C_HI : C_DIM, 1);
     if (voiced) {
         note_name(n, note);
         b[0] = 0;
@@ -276,142 +308,157 @@ static void draw_pitch(int note, int cents, int voiced)
         str_cat(b, cents >= 0 ? " +" : " ", sizeof b);
         { char c[8]; put_u(c, cents); str_cat(b, c, sizeof b); }
         str_cat(b, "c", sizeof b);
-        draw_text_box(10, 82, 220, &FONT_S, b, C_HI, 1);
     } else {
-        draw_text_box(10, 82, 220, &FONT_S, "waiting for a voice", C_DIM, 1);
+        str_cpy(b, "waiting", sizeof b);
     }
+    ui_text(UI_NOTE_X, UI_PITCH_Y, UI_NOTE_W, 18u, &FONT_S, b, voiced ? C_GREEN : C_DIM, 1);
 }
 
-static void draw_row(int y, const char *name, int32_t v, const char *suffix)
-{
-    char b[24];
-    draw_text_box(10, y, 120, &FONT_S, name, C_GRAY, 0);
-    put_u(b, v);
-    if (suffix) str_cat(b, suffix, sizeof b);
-    draw_text_box(150, y, 80, &FONT_S, b, C_HI, 1);
-}
-
-static void draw_bpm(int y, int bpm, int clk)
+static void draw_bpm(int bpm, int clk)
 {
     char b[16];
     put_u(b, bpm);
     if (clk) str_cat(b, " CLK", sizeof b);
-    draw_text_box(10, y, 120, &FONT_S, "BPM", C_GRAY, 0);
-    draw_text_box(150, y, 80, &FONT_S, b, clk ? C_ACCENT : C_HI, 1);
+    ui_text(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_S, b, clk ? C_YELLOW : C_HI, 1);
 }
 
-static void draw_sample(int y, uint32_t frames, int recording)
+static void draw_sample(uint32_t frames, int recording)
 {
-    char b[24], c[8];
+    char a[16], b[16];
     if (!frames && !recording) {
-        str_cpy(b, "EMPTY", sizeof b);
+        str_cpy(a, "EMPTY", sizeof a);
+        b[0] = 0;
     } else {
         uint32_t t = (frames * 10u + FW_FS / 2u) / FW_FS;
+        a[0] = 0;
+        { char c[8]; put_u(c, (int32_t)t / 10); str_cat(a, c, sizeof a); }
+        str_cat(a, ".", sizeof a);
+        { char c[8]; put_u(c, (int32_t)t % 10); str_cat(a, c, sizeof a); }
+        str_cat(a, "s", sizeof a);
         b[0] = 0;
-        if (recording) str_cat(b, "REC ", sizeof b);
-        put_u(c, (int32_t)t / 10);
-        str_cat(b, c, sizeof b);
-        str_cat(b, ".", sizeof b);
-        put_u(c, (int32_t)t % 10);
-        str_cat(b, c, sizeof b);
-        str_cat(b, "s", sizeof b);
         if (!recording) {
-            str_cat(b, " 1/", sizeof b);
-            put_u(c, (int32_t)loop_div);
-            str_cat(b, c, sizeof b);
+            str_cat(b, "1/", sizeof b);
+            { char c[8]; put_u(c, (int32_t)loop_div); str_cat(b, c, sizeof b); }
         }
     }
-    draw_text_box(10, y, 120, &FONT_S, "SAMPLE", C_GRAY, 0);
-    draw_text_box(150, y, 80, &FONT_S, b, C_HI, 1);
+    ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 17u, &FONT_S, a, C_HI, 1);
+    ui_text(UI_SAMPLE_X, UI_SAMPLE_Y + 17u, UI_SAMPLE_W, 17u, &FONT_S, b, recording ? C_RED : C_GREEN, 1);
 }
 
-static void draw_mode(int y, int loop, int mask)
+static void draw_knobs(void)
 {
-    char b[16];
-    str_cpy(b, loop ? "LOOP" : "ONCE", sizeof b);
-    str_cat(b, mask ? " MASK" : " OPEN", sizeof b);
-    draw_text_box(10, y, 120, &FONT_S, "MODE", C_GRAY, 0);
-    draw_text_box(150, y, 80, &FONT_S, b, mask ? C_ACCENT : C_HI, 1);
+    char b[8];
+    put_u(b, p_speed);
+    ui_text(7u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    put_u(b, p_mix);
+    str_cat(b, "%", sizeof b);
+    ui_text(67u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    put_u(b, p_correct);
+    str_cat(b, "%", sizeof b);
+    ui_text(126u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+    put_u(b, p_oct);
+    ui_text(186u, UI_KNOB_Y, 50u, 16u, &FONT_S, b, C_BLACK, 1);
+}
+
+static void draw_modes(int loop)
+{
+    ui_fill(UI_MODES_X, UI_MODES_Y, UI_MODES_W, UI_MODES_H, C_BLACK);
+    ui_icon(FW_UI_REPEAT_X, FW_UI_REPEAT_Y, FW_UI_REPEAT_W, FW_UI_REPEAT_H,
+            FW_UI_REPEAT, loop ? 255u : UI_OFF_ALPHA);
+    ui_icon(FW_UI_ONCE_X, FW_UI_ONCE_Y, FW_UI_ONCE_W, FW_UI_ONCE_H,
+            FW_UI_ONCE, loop ? UI_OFF_ALPHA : 255u);
+}
+
+static void draw_rec(int recording)
+{
+    ui_fill(UI_REC_X, UI_REC_Y, UI_REC_W, UI_REC_H, C_BLACK);
+    if (recording)
+        ui_icon(FW_UI_REC_X, FW_UI_REC_Y, FW_UI_REC_W, FW_UI_REC_H, FW_UI_REC, 255u);
+}
+
+static void draw_latch(int latch)
+{
+    ui_fill(UI_LATCH_X, UI_LATCH_Y, UI_LATCH_W, UI_LATCH_H, C_BLACK);
+    ui_icon(FW_UI_LATCH_X, FW_UI_LATCH_Y, FW_UI_LATCH_W, FW_UI_LATCH_H,
+            FW_UI_LATCH, latch ? 255u : UI_OFF_ALPHA);
+}
+
+static void draw_link(int play)
+{
+    ui_fill(128u, 100u, 44u, 28u, C_BLACK);
+    ui_icon(FW_UI_LINK_X, FW_UI_LINK_Y, FW_UI_LINK_W, FW_UI_LINK_H,
+            FW_UI_LINK, play == 2 ? 255u : play ? 60u : UI_OFF_ALPHA);
 }
 
 static void draw_all(int note, int cents, int voiced, int play)
 {
-    char n[8];
-    uint32_t frames = rec ? s_w : s_len;
-    lcd_fill(0, 0, 240, 240, C_BLACK);
-    draw_text_box(10, 4, 160, &FONT_S, "atlatl", C_HI, 0);
-    draw_text_box(176, 4, 56, &FONT_S, play == 2 ? "USB" : play ? "WAIT" : "NO USB",
-                  play == 2 ? C_ACCENT : C_GRAY, 1);
-    draw_text_box(10, 22, 220, &FONT_S, "THE ATLTUNER", C_GRAY, 0);
-    if (target >= 0) {
-        note_name(n, target);
-        draw_text_box(10, 42, 220, &FONT_L, n, C_ACCENT, 1);
-    } else {
-        draw_text_box(10, 42, 220, &FONT_L, "---", C_DIM, 1);
-    }
-    draw_pitch(note, cents, voiced);
-    draw_row(106, "SPEED", p_speed, 0);
-    draw_row(124, "MIX", p_mix, "%");
-    draw_row(142, "CORRECT", p_correct, "%");
-    draw_row(160, "OCT", p_oct, 0);
-    draw_bpm(178, tempo_now(), clock_active);
-    draw_sample(196, frames, rec);
-    draw_mode(214, p_loop, p_mask);
+    ui_draw_bg();
+    draw_note(note, cents, voiced);
+    draw_knobs();
+    draw_bpm(tempo_now(), clock_active);
+    draw_sample(rec ? s_w : s_len, rec);
+    draw_modes(p_loop);
+    draw_rec(rec);
+    draw_latch(p_latch);
+    draw_link(play);
 }
 
-/* Only changed lines are redrawn. The full 240 x 240 fill happens once, at start. */
+/* Only changed slots are redrawn. The full 240 x 240 background happens once, at start. */
 static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
 {
-    static int init, s_target, s_note, s_cents, s_voiced, s_play;
-    static int s_speed, s_mix, s_correct, s_oct, s_bpm, s_clk, s_loop, s_mask, s_rec;
+    static int init, s_target, s_note, s_cents, s_voiced;
+    static int s_speed, s_mix, s_correct, s_oct, s_bpm, s_clk;
+    static int s_loop, s_mask, s_rec, s_latch, s_play;
     static uint32_t s_frames, s_div, pitch_ms, sample_ms;
-    char n[8];
     uint32_t frames = rec ? s_w : s_len;
     if (!init) {
         draw_all(note, cents, voiced, play);
-        s_target = target; s_note = note; s_cents = cents; s_voiced = voiced; s_play = play;
+        s_target = target; s_note = note; s_cents = cents; s_voiced = voiced;
         s_speed = p_speed; s_mix = p_mix; s_correct = p_correct; s_oct = p_oct;
-        s_bpm = tempo_now(); s_clk = clock_active; s_loop = p_loop; s_mask = p_mask;
-        s_frames = frames; s_div = loop_div; s_rec = rec;
+        s_bpm = tempo_now(); s_clk = clock_active;
+        s_loop = p_loop; s_mask = p_mask; s_rec = rec; s_latch = p_latch;
+        s_play = play; s_frames = frames; s_div = loop_div;
         pitch_ms = sample_ms = now; init = 1;
         return;
     }
-    if (play != s_play) {
-        draw_text_box(176, 4, 56, &FONT_S, play == 2 ? "USB" : play ? "WAIT" : "NO USB",
-                      play == 2 ? C_ACCENT : C_GRAY, 1);
-        s_play = play;
+    if ((target != s_target || note != s_note || cents != s_cents || voiced != s_voiced) &&
+        now - pitch_ms >= 100u) {
+        draw_note(note, cents, voiced);
+        s_target = target; s_note = note; s_cents = cents; s_voiced = voiced; pitch_ms = now;
     }
-    if (target != s_target) {
-        if (target >= 0) { note_name(n, target); draw_text_box(10, 42, 220, &FONT_L, n, C_ACCENT, 1); }
-        else draw_text_box(10, 42, 220, &FONT_L, "---", C_DIM, 1);
-        s_target = target;
+    if (p_speed != s_speed || p_mix != s_mix || p_correct != s_correct || p_oct != s_oct) {
+        draw_knobs();
+        s_speed = p_speed; s_mix = p_mix; s_correct = p_correct; s_oct = p_oct;
     }
-    if (p_speed != s_speed) { draw_row(106, "SPEED", p_speed, 0); s_speed = p_speed; }
-    if (p_mix != s_mix) { draw_row(124, "MIX", p_mix, "%"); s_mix = p_mix; }
-    if (p_correct != s_correct) { draw_row(142, "CORRECT", p_correct, "%"); s_correct = p_correct; }
-    if (p_oct != s_oct) { draw_row(160, "OCT", p_oct, 0); s_oct = p_oct; }
     if (tempo_now() != s_bpm || clock_active != s_clk) {
-        draw_bpm(178, tempo_now(), clock_active);
+        draw_bpm(tempo_now(), clock_active);
         s_bpm = tempo_now(); s_clk = clock_active;
     }
-    if (p_loop != s_loop) {
-        draw_mode(214, p_loop, p_mask);
-        s_loop = p_loop;
-        s_frames = 0xFFFFFFFFu;                     /* the sample line gains/loses its 1/n suffix */
-    }
-    if (p_mask != s_mask) {
-        draw_mode(214, p_loop, p_mask);
-        s_mask = p_mask;
-    }
-    if (frames != s_frames || loop_div != s_div || rec != s_rec) {
+    if (rec != s_rec) {
+        draw_rec(rec);
+        draw_sample(frames, rec);
+        s_rec = rec; s_frames = frames; s_div = loop_div; sample_ms = now;
+    } else if (frames != s_frames || loop_div != s_div) {
         if (!rec || now - sample_ms >= 100u) {
-            draw_sample(196, frames, rec);
-            s_frames = frames; s_div = loop_div; s_rec = rec; sample_ms = now;
+            draw_sample(frames, rec);
+            s_frames = frames; s_div = loop_div; sample_ms = now;
         }
     }
-    if ((note != s_note || cents != s_cents || voiced != s_voiced) && now - pitch_ms >= 100u) {
-        draw_pitch(note, cents, voiced);
-        s_note = note; s_cents = cents; s_voiced = voiced; pitch_ms = now;
+    if (p_loop != s_loop) {
+        draw_modes(p_loop);
+        s_loop = p_loop;
+    }
+    if (p_latch != s_latch) {
+        draw_latch(p_latch);
+        s_latch = p_latch;
+    }
+    if (p_mask != s_mask) {
+        /* MASK has no SVG slot; its LED and the ARP button carry that state. */
+        s_mask = p_mask;
+    }
+    if (play != s_play) {
+        draw_link(play);
+        s_play = play;
     }
 }
 

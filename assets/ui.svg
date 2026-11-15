@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="240"
+   height="240"
+   viewBox="0 0 63.499999 63.5"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="ui.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="140.00714"
+     inkscape:cy="176.06959"
+     inkscape:window-width="1770"
+     inkscape:window-height="1359"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient13"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#333333;stop-opacity:1;"
+         offset="0.86666667"
+         id="stop13" />
+      <stop
+         style="stop-color:#8e8e8e;stop-opacity:0;"
+         offset="1"
+         id="stop14" />
+    </linearGradient>
+    <inkscape:path-effect
+       effect="spiro"
+       id="path-effect7"
+       is_visible="true"
+       lpeversion="1" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient13"
+       id="linearGradient14"
+       x1="15.00839"
+       y1="13.139029"
+       x2="15.00839"
+       y2="38.242027"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:5.45546px;line-height:4.8326px;font-family:'Source Sans Pro';-inkscape-font-specification:'Source Sans Pro, Bold';letter-spacing:0.324772px;word-spacing:-0.514008px;writing-mode:lr-tb;direction:ltr;fill:#f9f9f9;stroke-width:2.04613;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:fill markers stroke"
+       x="7.0352941"
+       y="5.3096013"
+       id="text1"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.45546px;line-height:4.8326px;font-family:'GeistMono Nerd Font';-inkscape-font-specification:'GeistMono Nerd Font';letter-spacing:0.324772px;word-spacing:-0.514008px;fill:#f9f9f9;stroke-width:2.04613;stroke-dasharray:none"
+         sodipodi:role="line"
+         id="tspan4"
+         x="7.0352941"
+         y="5.3096013">ATL</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.45546px;line-height:4.8326px;font-family:'GeistMono Nerd Font';-inkscape-font-specification:'GeistMono Nerd Font';letter-spacing:0.324772px;word-spacing:-0.514008px;fill:#f9f9f9;stroke-width:2.04613;stroke-dasharray:none"
+         x="7.0352941"
+         y="10.268097"
+         id="tspan2">ATL</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:12.7023px;font-family:'Source Sans Pro';-inkscape-font-specification:'Source Sans Pro, Bold';letter-spacing:0.825651px;writing-mode:lr-tb;direction:ltr;fill:#f9f9f9;stroke-width:4.23411;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       x="18.745541"
+       y="10.365103"
+       id="text3"><tspan
+         sodipodi:role="line"
+         id="tspan3"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'GeistMono Nerd Font Propo';-inkscape-font-specification:'GeistMono Nerd Font Propo Bold';fill:#f9f9f9;stroke-width:4.23411"
+         x="18.745541"
+         y="10.365103">TUNE</tspan></text>
+    <g
+       id="speed">
+      <rect
+         style="fill:#ececec;stroke:#cccccc;stroke-width:1.90303;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="rect6"
+         width="13.172607"
+         height="14.394807"
+         x="1.8266935"
+         y="47.705933"
+         rx="3.9999998"
+         ry="3.9999998" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.69339px;line-height:4.15753px;font-family:'GeistMono Nerd Font Propo';-inkscape-font-specification:'GeistMono Nerd Font Propo Bold';letter-spacing:0.279405px;word-spacing:-0.442205px;writing-mode:lr-tb;direction:ltr;fill:#22280b;stroke:none;stroke-width:1.7603;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         x="3.7006388"
+         y="53.053257"
+         id="text5"><tspan
+           sodipodi:role="line"
+           id="tspan5"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.69339px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.7603"
+           x="3.7006388"
+           y="53.053257">SPD</tspan></text>
+    </g>
+    <g
+       id="mix">
+      <rect
+         style="fill:#ececec;stroke:#cccccc;stroke-width:1.90303;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="rect6-8"
+         width="13.172607"
+         height="14.394807"
+         x="17.705742"
+         y="47.536629"
+         rx="3.9999998"
+         ry="3.9999998" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.69339px;line-height:4.15753px;font-family:'GeistMono Nerd Font Propo';-inkscape-font-specification:'GeistMono Nerd Font Propo Bold';letter-spacing:0.279405px;word-spacing:-0.442205px;writing-mode:lr-tb;direction:ltr;fill:#22280b;stroke:none;stroke-width:1.7603;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         x="19.673967"
+         y="52.980713"
+         id="text5-9"><tspan
+           sodipodi:role="line"
+           id="tspan5-8"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.69339px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.7603"
+           x="19.673967"
+           y="52.980713">MIX</tspan></text>
+    </g>
+    <g
+       id="correction">
+      <rect
+         style="fill:#ececec;stroke:#cccccc;stroke-width:1.90303;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="rect6-1"
+         width="13.172607"
+         height="14.394807"
+         x="33.447292"
+         y="47.705929"
+         rx="3.9999998"
+         ry="3.9999998" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.69339px;line-height:4.15753px;font-family:'GeistMono Nerd Font Propo';-inkscape-font-specification:'GeistMono Nerd Font Propo Bold';letter-spacing:0.279405px;word-spacing:-0.442205px;writing-mode:lr-tb;direction:ltr;fill:#22280b;stroke:none;stroke-width:1.7603;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         x="35.346237"
+         y="52.980717"
+         id="text5-4"><tspan
+           sodipodi:role="line"
+           id="tspan5-6"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.69339px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.7603"
+           x="35.346237"
+           y="52.980717">COR</tspan></text>
+    </g>
+    <g
+       id="octave">
+      <rect
+         style="fill:#ececec;stroke:#cccccc;stroke-width:1.90303;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="rect6-8-1"
+         width="13.172607"
+         height="14.394807"
+         x="49.326347"
+         y="47.536625"
+         rx="3.9999998"
+         ry="3.9999998" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.69339px;line-height:4.15753px;font-family:'GeistMono Nerd Font Propo';-inkscape-font-specification:'GeistMono Nerd Font Propo Bold';letter-spacing:0.279405px;word-spacing:-0.442205px;writing-mode:lr-tb;direction:ltr;fill:#22280b;stroke:none;stroke-width:1.7603;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         x="51.616264"
+         y="53.056522"
+         id="text5-9-2"><tspan
+           sodipodi:role="line"
+           id="tspan5-8-3"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.69339px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.7603"
+           x="51.616264"
+           y="53.056522">OCT</tspan></text>
+    </g>
+    <g
+       id="recording-indicator"
+       transform="translate(15.717553,4.1907309)">
+      <circle
+         style="fill:#ff0000;stroke:none;stroke-width:1.27544;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="path6"
+         cx="31.192581"
+         cy="36.565346"
+         r="1.8316429" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:4.99999px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0.336021px;word-spacing:-0.531812px;writing-mode:lr-tb;direction:ltr;fill:#ff0000;stroke:none;stroke-width:2.117;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         x="34.062008"
+         y="38.378162"
+         id="text7"><tspan
+           sodipodi:role="line"
+           id="tspan7"
+           style="stroke-width:2.117"
+           x="34.062008"
+           y="38.378162">REC</tspan></text>
+    </g>
+    <g
+       id="bpm-indicator"
+       transform="translate(-4.7625002,-7.4083337)">
+      <circle
+         style="fill:#d4ff2a;stroke:none;stroke-width:1.27544;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="path6-5"
+         cx="35.911957"
+         cy="28.163256"
+         r="1.8316429" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:4.99999px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0.336021px;word-spacing:-0.531812px;writing-mode:lr-tb;direction:ltr;fill:#d4ff2a;stroke:none;stroke-width:2.117;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         x="38.781384"
+         y="29.976072"
+         id="text7-0"><tspan
+           sodipodi:role="line"
+           id="tspan7-5"
+           style="fill:#d4ff2a;stroke-width:2.117"
+           x="38.781384"
+           y="29.976072">BPM</tspan></text>
+    </g>
+    <g
+       id="g7"
+       transform="translate(-4.7625002,-5.2916669)">
+      <circle
+         style="fill:none;stroke:#aad400;stroke-width:1.27544;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="path6-7"
+         cx="41.890541"
+         cy="35.408909"
+         r="1.8316429" />
+      <circle
+         style="fill:none;stroke:#aad400;stroke-width:1.27544;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="path6-7-5"
+         cx="47.031128"
+         cy="35.371155"
+         r="1.8316429" />
+      <path
+         style="fill:none;stroke:#aad400;stroke-width:1.275;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         d="m 35.838553,39.203423 h 5.394476"
+         id="path7"
+         inkscape:path-effect="#path-effect7"
+         inkscape:original-d="m 35.838553,39.203423 c 1.833766,0 3.614121,0 5.394476,0"
+         transform="translate(5.9276545,-5.6655403)" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.2875px;line-height:11.7704px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0.79102px;word-spacing:-1.25193px;writing-mode:lr-tb;direction:ltr;fill:#abc837;stroke:none;stroke-width:3.00145;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       x="4.6142998"
+       y="44.281029"
+       id="repeat-mode"><tspan
+         sodipodi:role="line"
+         id="tspan12"
+         style="stroke:none;stroke-width:3.00145;fill:#abc837"
+         x="4.6142998"
+         y="44.281029">∞</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.8423px;line-height:8.71856px;font-family:'GeistMono Nerd Font Mono';-inkscape-font-specification:'GeistMono Nerd Font Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0.585923px;word-spacing:-0.927328px;writing-mode:lr-tb;direction:ltr;fill:#cdde87;stroke:none;stroke-width:2.22323;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       x="15.775782"
+       y="43.91589"
+       id="once-mode"><tspan
+         sodipodi:role="line"
+         id="tspan13"
+         x="15.775782"
+         y="43.91589"
+         style="stroke-width:2.22323;fill:#cdde87">➡</tspan></text>
+    <rect
+       style="fill:url(#linearGradient14);stroke:#cccccc;stroke-width:0.125;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="selected-note"
+       width="25.103001"
+       height="17.412001"
+       x="2.4568906"
+       y="16.984591"
+       rx="2"
+       ry="2" />
+    <rect
+       style="fill:none;stroke:none;stroke-width:0.125;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="bpm-text"
+       width="16.877768"
+       height="8.972991"
+       x="45.933167"
+       y="15.916376"
+       rx="4"
+       ry="4" />
+    <rect
+       style="fill:none;stroke:none;stroke-width:0.125;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="sample-text"
+       width="16.877768"
+       height="8.972991"
+       x="46.099998"
+       y="25.727085"
+       rx="4"
+       ry="4" />
+    <rect
+       style="fill:#ffeeaa;stroke:#ffcc00;stroke-width:2.09923;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="latch-mode"
+       width="6.2090001"
+       height="6.0223517"
+       x="54.752449"
+       y="2.9288929"
+       rx="4"
+       ry="4" />
+  </g>
+</svg>

@@ -15,6 +15,7 @@ typedef struct {               /* proportional, see tools/gen_font.py */
     const uint8_t *data;
 } felucca_font_t;
 #include "felucca_font.h"
+#include "fw_ui.h"
 
 #define CV_MAX (240u * 64u)       /* text rows and the graph strip; keeps the pool for the 3 s sample */
 static uint16_t cv_px[CV_MAX] FW_POOL;
@@ -28,6 +29,11 @@ static int32_t cv_oy;            /* y offset for graph drawing */
 #define C_DIM RGB(70, 70, 80)
 #define C_HI RGB(230, 230, 240)
 #define C_ACCENT RGB(40, 124, 255)
+#define C_GREEN RGB(171, 200, 55)
+#define C_LIME RGB(205, 222, 135)
+#define C_RED RGB(255, 0, 0)
+#define C_YELLOW RGB(255, 204, 0)
+#define C_LATCH RGB(255, 238, 170)
 
 static inline uint16_t swap16(uint32_t c) { return (uint16_t)(((c >> 8) & 0xFFu) | ((c & 0xFFu) << 8)); }
 
@@ -176,3 +182,72 @@ static void draw_text_box(uint32_t x, uint32_t y, uint32_t w, const felucca_font
     lcd_sync();                     /* one-shots (boot, crash, UBOOT, update) finish here */
 }
 
+
+
+#if FW_UI
+/* The UI raster is a 256-colour background. Live values are drawn over the matching pixels, so the gradients and
+ * the box fills survive. */
+static void ui_pixels(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+    uint32_t r, c;
+    cv_begin(w, h, C_BLACK);
+    for (r = 0; r < h; r++)
+        for (c = 0; c < w; c++)
+            cv_px[r * w + c] = swap16(FW_UI_PAL[FW_UI_PX[(y + r) * FW_UI_W + x + c]]);
+}
+
+static void ui_draw_bg(void)
+{
+    const uint32_t strip = CV_MAX / FW_UI_W;
+    uint32_t y, i;
+    for (y = 0; y < FW_UI_H; y += strip) {
+        const uint32_t h = FW_UI_H - y < strip ? FW_UI_H - y : strip;
+        cv_begin(FW_UI_W, h, C_BLACK);
+        for (i = 0; i < FW_UI_W * h; i++)
+            cv_px[i] = swap16(FW_UI_PAL[FW_UI_PX[y * FW_UI_W + i]]);
+        cv_blit(0, y);
+    }
+    lcd_sync();
+}
+
+static void ui_text(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const felucca_font_t *f,
+                    const char *s, uint16_t c, int align)
+{
+    int32_t tw = text_w(f, s), tx = 0;
+    ui_pixels(x, y, w, h);
+    if (align == 1)
+        tx = ((int32_t)w - tw) / 2;
+    else if (align == 2)
+        tx = (int32_t)w - tw;
+    cv_text(tx, ((int32_t)h - (int32_t)f->h) / 2, f, s, c);
+    cv_blit(x, y);
+    lcd_sync();
+}
+
+static void ui_fill(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t c)
+{
+    cv_begin(w, h, c);
+    cv_blit(x, y);
+    lcd_sync();
+}
+
+static uint16_t ui_fade(uint16_t c, uint8_t a)
+{
+    uint32_t r = (c >> 11) * a / 255u;
+    uint32_t g = ((c >> 5) & 63u) * a / 255u;
+    uint32_t b = (c & 31u) * a / 255u;
+    return (uint16_t)((r << 11) | (g << 5) | b);
+}
+
+/* A live icon cropped from the SVG raster: alpha 0..255, black where the icon is empty. */
+static void ui_icon(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *icon, uint8_t alpha)
+{
+    uint32_t i;
+    cv_begin(w, h, C_BLACK);
+    for (i = 0; i < w * h; i++)
+        if (icon[i])
+            cv_px[i] = swap16(ui_fade(icon[i], alpha));
+    cv_blit(x, y);
+    lcd_sync();
+}
+#endif

@@ -29,6 +29,7 @@ firmware/
     third_party.txt  the third_party/ folders to build with the app
     name.txt         the name on the splash (default FM-1 PLAYGROUND)
     logo.png         the splash logo, any size: tools/gen_logo.py fits it into 240×240, 256 colours
+    ui.png           the 240×240 UI background from assets/ui.svg: tools/gen_ui.py makes fw_ui.h
   cxx/               minimal <algorithm> / <cmath> / <new> and the C++ runtime (the toolchain has none)
   sys/               the system layer
     fw.h             the app API (types, constants, buttons, encoders)
