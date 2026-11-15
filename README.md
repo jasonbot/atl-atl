@@ -38,11 +38,11 @@ FM-1 output ──► USB audio IN: the computer can record what the speaker pla
 - **Key-targeted tuning**: a held key is the target note. The input is analyzed for its fundamental, the target is
   folded to the octave nearest the singer, and a phase-synchronous granular shifter moves the input to the target.
   Releasing the keys returns to the dry signal unless **FX** latches the note.
-- **Three-second sampler**: hold **REC** to capture the USB input (mono, at the codec rate) while the live tuner
-  keeps playing. **PLAY** plays the sample once; **SEQ** makes it loop. The loop length is the note length nearest
-  the sample's own length at the current tempo (whole, half, quarter, eighth, sixteenth, and thirds/ninths), so a
-  sample is clipped or followed by silence to land on the note grid. The sample is mixed with the live input when
-  both play.
+- **Three-second sampler**: hold **REC** to capture the USB input unaltered (mono, at the codec rate) while the
+  live tuner keeps playing. **PLAY** plays it once; **SEQ** loops it. The recorded note is the sample's root, and
+  holding a key pitches the sample to that note like a one-note instrument. The loop length is the note length
+  nearest the sample's own length at the current tempo (whole, half, quarter, eighth, sixteenth, and thirds/ninths),
+  so it is clipped or followed by silence to land on the note grid. It mixes with the live input when both play.
 - **Tempo and mask**: **SELECT** sets 30–300 BPM; USB-MIDI clock overrides it while clocks arrive. **ARP** masks
   the output so sound only passes while a key is held. **FX** latches the target, which makes the mask always on.
 - **The four knobs** set speed, mix, correction and octave. **EDIT** switches auto-octave folding; **SAVE** stores

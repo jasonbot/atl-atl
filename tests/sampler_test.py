@@ -118,6 +118,31 @@ wav {wav}/trim.wav
     assert peak(play) > 2000, "sampler did not play the recorded tone"
     assert peak(tail(x, sr, 0.08)) < 500, "leading/trailing silence was not trimmed"
 
+
+    # A key must pitch the recorded sample: record 440 Hz, play it at C4.
+    pitch_script = f"""master 1023
+frames 20
+usbtone 440 -10
+usbrec 2
+btn REC down
+frames 40
+btn REC up
+usbtone 0
+frames 5
+midi 0x90 60 100
+btn PLAY down
+frames 1
+btn PLAY up
+frames 60
+wav {wav}/pitched.wav
+midi 0x80 60 0
+"""
+    run("pitched", pitch_script)
+    sr, x = read_wav(wav / "pitched.wav")
+    x = tail(x, sr, 0.20)
+    tuned, root = tone(x, sr, 261.6256), tone(x, sr, 440.0)
+    assert tuned > root * 2.0, f"sample did not follow C4 (C4 {tuned:.0f}, root {root:.0f})"
+
     print("sampler_test: ok")
 
 

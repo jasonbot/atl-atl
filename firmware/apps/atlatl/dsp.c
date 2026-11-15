@@ -38,6 +38,11 @@ void atlatl_status(int *f0_x100, int *ratio_x100, int *voiced, int *clarity)
     *clarity = (int)(dsp.clarity * 100.0f);
 }
 
+int atlatl_note_hz100(int midi)
+{
+    return (int)(at_note_freq(&dsp, midi) * 100.0f + 0.5f);
+}
+
 int atlatl_note(int *cents)
 {
     float c;

@@ -33,8 +33,9 @@ static volatile int target = TARGET_NONE;
 static int target_src;
 static volatile uint8_t midi_any;
 static volatile uint8_t rec, playing, rec_done;
-static volatile uint32_t s_w, s_len, s_r, loop_pos;
-static volatile uint32_t loop_period, loop_play;
+static volatile uint32_t s_w, s_len, s_r, s_frac, loop_pos;
+static volatile uint32_t loop_period, loop_play, sample_step = 65536u;
+static uint32_t sample_hz100, rec_hz100;
 static uint32_t loop_div = 4;
 static int clock_active;
 static uint32_t clock_ms, clock_start_ms, clock_count, clock_bpm = 120;
@@ -141,7 +142,20 @@ static void params_changed(void)
     atlatl_target(target);
 }
 
-static void set_target(int midi) { target = midi; atlatl_target(midi); }
+static void sample_step_update(void)
+{
+    uint32_t step = 65536u;
+    if (target >= 0 && sample_hz100) {
+        int hz = atlatl_note_hz100(target);
+        if (hz > 0)
+            step = (uint32_t)(((uint64_t)hz * 65536u) / sample_hz100);
+    }
+    if (step < 16384u) step = 16384u;          /* 0.25x */
+    if (step > 262144u) step = 262144u;        /* 4x */
+    sample_step = step;
+}
+
+static void set_target(int midi) { target = midi; atlatl_target(midi); sample_step_update(); }
 
 static int midi_held_test(uint32_t n) { return (midi_held[n >> 5] >> (n & 31u)) & 1u; }
 
@@ -200,7 +214,9 @@ static void sample_finish(void)
 {
     s_len = s_w;
     sample_trim();
+    sample_hz100 = rec_hz100;                    /* the recorded note is the sample's root */
     rec_done = 0;
+    sample_step_update();
     tempo_recompute();
 }
 
@@ -211,10 +227,14 @@ static void record_start(void)
     rec_done = 0;
     s_w = 0;
     s_len = 0;
+    sample_hz100 = 0;
+    rec_hz100 = 0;
     playing = 0;
     s_r = 0;
+    s_frac = 0;
     loop_pos = 0;
     fm1_irq_on();
+    sample_step_update();
     tempo_recompute();
 }
 
@@ -238,6 +258,7 @@ static void play_toggle(void)
         playing = 0;
     } else if (s_len) {
         s_r = 0;
+        s_frac = 0;
         loop_pos = 0;
         playing = 1;
     }
@@ -308,7 +329,7 @@ static void draw_note(int note, int cents, int voiced)
         note_name(n, target);
     else
         str_cpy(n, "---", sizeof n);
-    ui_text(UI_NOTE_X, UI_NOTE_Y, UI_NOTE_W, 36u, &FONT_S, n, target >= 0 ? C_HI : C_DIM, 1);
+    ui_text(UI_NOTE_X, UI_NOTE_Y, UI_NOTE_W, 36u, &FONT_L, n, target >= 0 ? C_HI : C_DIM, 1);
     if (voiced) {
         note_name(n, note);
         b[0] = 0;
@@ -635,6 +656,8 @@ static void app_frame(const fw_input_t *in)
     {
         int f0, ratio, voiced, clarity, note = 0, cents = 0;
         atlatl_status(&f0, &ratio, &voiced, &clarity);
+        if (rec && voiced && f0 > 0)
+            rec_hz100 = (uint32_t)f0;
         if (voiced)
             note = atlatl_note(&cents);
         draw_ui(note, cents, voiced, play, in->ms);
@@ -665,19 +688,35 @@ static void app_audio(int32_t *lr, uint32_t frames)
     for (i = 0; i < frames; i++) {
         int32_t v = 0, l, r;
         if (playing) {
+            uint32_t frac = s_frac;
             if (p_loop) {
                 if (!loop_period) {
                     playing = 0;
                 } else {
-                    if (loop_pos >= loop_period) loop_pos = 0;
-                    if (loop_pos < loop_play) v = sample[loop_pos];
+                    if (loop_pos >= loop_period) {
+                        loop_pos = 0;
+                        s_r = 0;
+                        frac = 0;
+                    }
+                    if (s_r < loop_play) {
+                        int32_t a = sample[s_r];
+                        int32_t b = s_r + 1u < s_len ? sample[s_r + 1u] : a;
+                        v = a + (int32_t)(((int64_t)(b - a) * frac) >> 16);
+                    }
                     loop_pos++;
+                    frac += sample_step;
+                    while (frac >= 65536u) { frac -= 65536u; s_r++; }
                 }
             } else if (s_r < s_len) {
-                v = sample[s_r++];
+                int32_t a = sample[s_r];
+                int32_t b = s_r + 1u < s_len ? sample[s_r + 1u] : a;
+                v = a + (int32_t)(((int64_t)(b - a) * frac) >> 16);
+                frac += sample_step;
+                while (frac >= 65536u) { frac -= 65536u; s_r++; }
             } else {
                 playing = 0;
             }
+            s_frac = frac;
         }
         if (!gate) {
             l = r = 0;

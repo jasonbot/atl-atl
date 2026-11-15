@@ -11,4 +11,5 @@ void atlatl_fold(int fold);
 void atlatl_process(const int16_t *in, int32_t *out, uint32_t n);   /* Q15 stereo */
 void atlatl_status(int *f0_x100, int *ratio_x100, int *voiced, int *clarity);
 int atlatl_note(int *cents);                   /* nearest MIDI note to the last f0 */
+int atlatl_note_hz100(int midi);               /* equal-tempered note frequency, Hz * 100 */
 #endif

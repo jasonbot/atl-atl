@@ -22,7 +22,7 @@ FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 # (name, file, px, scale, pixel, first, last): pixel fonts are rendered without
 # anti-aliasing at their design size and enlarged by an integer factor
 SIZES = [("S", "GeistMono-Regular.ttf", 15, 1, False, 32, 126),   # printable ASCII
-         ("L", "GeistSerif-Regular.ttf", 28, 1, False, 48, 57)]    # BPM numerals only
+         ("L", "GeistSerif-Regular.ttf", 28, 1, False, 35, 71)]    # target notes and BPM numerals
 PAD = 2
 
 
