@@ -4,8 +4,8 @@
 # Modified for GATOR by npi3pak, 2026, from ORBIT 0.6.0 (dspaudio/orbit)
 """Render the bitmap fonts to a C header (assets/fonts/):
   S  labels / units / status   Latin-1 32..255 at 1x
-  L  large values / titles     32..95 (digits, signs, capitals), the same glyphs at 2x
-Geist Mono (ASCII) and Geist Serif (BPM numerals), SIL OFL 1.1, rendered through Pillow
+  L  large values / titles     35..71 (digits, signs, capitals) at 28 px
+Geist Mono (ASCII) and Geist Sans (target notes and BPM), SIL OFL 1.1, rendered through Pillow
 with anti-aliasing; tabular figures via the OpenType `tnum` feature.
 
 Glyph format: per glyph an advance width, a bitmap width and an offset; the
@@ -22,7 +22,7 @@ FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 # (name, file, px, scale, pixel, first, last): pixel fonts are rendered without
 # anti-aliasing at their design size and enlarged by an integer factor
 SIZES = [("S", "GeistMono-Regular.ttf", 15, 1, False, 32, 126),   # printable ASCII
-         ("L", "GeistSerif-Regular.ttf", 28, 1, False, 35, 71)]    # target notes and BPM numerals
+         ("L", "GeistSans-Regular.ttf", 28, 1, False, 35, 71)]    # target notes and BPM numerals
 PAD = 2
 
 

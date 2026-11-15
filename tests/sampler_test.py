@@ -143,6 +143,45 @@ midi 0x80 60 0
     tuned, root = tone(x, sr, 261.6256), tone(x, sr, 440.0)
     assert tuned > root * 2.0, f"sample did not follow C4 (C4 {tuned:.0f}, root {root:.0f})"
 
+    # GLO play-note mode: every key restarts the sample at that key's pitch; it is not a loop.
+    note_script = f"""master 1023
+frames 20
+usbtone 440 -10
+usbrec 2
+btn REC down
+frames 40
+btn REC up
+usbtone 0
+frames 5
+btn GLO down
+frames 1
+btn GLO up
+frames 2
+key 7 down
+frames 1
+key 7 up
+frames 20
+wav {wav}/glow-key.wav
+midi 0x90 69 100
+frames 1
+midi 0x80 69 0
+frames 20
+wav {wav}/glow-midi.wav
+frames 100
+wav {wav}/glow-end.wav
+"""
+    run("note", note_script)
+    sr, full = read_wav(wav / "glow-key.wav")
+    x = full[-int(sr * 0.20):]
+    tuned, root = tone(x, sr, 261.6256), tone(x, sr, 440.0)
+    assert tuned > root * 2.0, f"GLO key did not trigger C4 (C4 {tuned:.0f}, root {root:.0f})"
+    sr, full = read_wav(wav / "glow-midi.wav")
+    x = full[-int(sr * 0.20):]
+    tuned, root = tone(x, sr, 261.6256), tone(x, sr, 440.0)
+    assert root > tuned * 2.0, f"GLO MIDI note did not retrigger at A4 (A4 {root:.0f}, C4 {tuned:.0f})"
+    sr, full = read_wav(wav / "glow-end.wav")
+    assert peak(tail(full, sr, 0.08)) < 500, "GLO key sample looped instead of playing once"
+
     print("sampler_test: ok")
 
 

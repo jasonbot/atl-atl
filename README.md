@@ -39,10 +39,11 @@ FM-1 output ──► USB audio IN: the computer can record what the speaker pla
   folded to the octave nearest the singer, and a phase-synchronous granular shifter moves the input to the target.
   Releasing the keys returns to the dry signal unless **FX** latches the note.
 - **Three-second sampler**: hold **REC** to capture the USB input unaltered (mono, at the codec rate) while the
-  live tuner keeps playing. **PLAY** plays it once; **SEQ** loops it. The recorded note is the sample's root, and
-  holding a key pitches the sample to that note like a one-note instrument. The loop length is the note length
-  nearest the sample's own length at the current tempo (whole, half, quarter, eighth, sixteenth, and thirds/ninths),
-  so it is clipped or followed by silence to land on the note grid. It mixes with the live input when both play.
+  live tuner keeps playing. **PLAY** plays it once; **SEQ** loops it. **GLO** selects play-note mode: every physical
+  or MIDI key press restarts the sample, retuned to that key, as a one-shot. GLO and SEQ are exclusive. The recorded
+  note is the sample's root. The loop length is the note length nearest the sample's own length at the current tempo
+  (whole, half, quarter, eighth, sixteenth, and thirds/ninths), so it is clipped or followed by silence to land on the
+  note grid. It mixes with the live input when both play.
 - **Tempo and mask**: **SELECT** sets 30–300 BPM; USB-MIDI clock overrides it while clocks arrive. **ARP** masks
   the output so sound only passes while a key is held. **FX** latches the target, which makes the mask always on.
 - **The four knobs** set speed, mix, correction and octave. **EDIT** switches auto-octave folding; **SAVE** stores
@@ -91,10 +92,11 @@ workflow runs the host simulator and the installer tests before it creates the r
 | **REC** | hold to record the USB input; release to stop. Auto-stops at three seconds |
 | **PLAY** | play the sample once, or stop playback; with LOOP, start or stop the loop |
 | **SEQ** | ONCE / LOOP for sample playback |
+| **GLO** | play-note mode: each key restarts the sample at that key's pitch; one-shot, and exclusive with LOOP |
 | **ARP** | MASK: pass sound only while a key is held |
 | **FX** | latch the last target after the keys are released; with MASK, the output stays on |
 | **EDIT** | AUTO vs FIXED octave folding |
-| **SAVE** | store speed, mix, correction, octave, latch, fold, BPM, loop and mask |
+| **SAVE** | store speed, mix, correction, octave, latch, fold, BPM, loop, mask and play-note mode |
 | **SELECT** | BPM, 30–300; USB-MIDI clock takes over while clocks arrive |
 
 The tuner owns the keys and the four knobs directly. USB-MIDI note on/off is a second keyboard: held MIDI notes
@@ -125,7 +127,7 @@ Host simulator:
 
 ```sh
 python3 tools/sim.py                         # host/atlatl.sim: 220 Hz in, C4 held
-python3 tests/sampler_test.py                # MIDI held keys, note 0, record trim, playback
+python3 tests/sampler_test.py                # MIDI held keys, note 0, record trim, playback, GLO retrigger
 ```
 
 ## Sources and lineage

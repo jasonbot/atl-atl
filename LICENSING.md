@@ -41,7 +41,7 @@ Every file in this tree that carries an `SPDX-License-Identifier: GPL-3.0-only` 
 | ORBIT by dspaudio (<https://github.com/dspaudio/orbit>), a fork of SLOOP: the platform GATOR was cut down from | GPL-3.0-only | as above |
 | SLOOP by isod89 (<https://github.com/isod89/sloop-fm1>), a fork of Felucca: the web install protocol (`fm1pkg.js` unchanged from SLOOP 2.7; `fm1ota.js` from SLOOP 2.7 with the loader's macOS port names added), the stock supply levels at start | GPL-3.0-only | `web/fm1ota.js`, `web/fm1pkg.js`, `firmware/hal/fm1_sys.h` |
 | ChoralRoot by Quixotic7 (<https://github.com/Quixotic7/ChoralRootFM1>): the order of the audio interrupt's acknowledge (0.18); the release and Pages workflows follow its layout | GPL-3.0-only | `firmware/sys/audio.c`, `.github/workflows/` |
-| Geist Mono and Geist Serif by Vercel: the UI text and BPM numerals, rasterised into the firmware at build time (`tools/gen_font.py`) | SIL OFL 1.1 | `assets/fonts/GeistMono-Regular.ttf`, `assets/fonts/GeistSerif-Regular.ttf`, `LICENSES/OFL-Geist.txt` |
+| Geist Mono and Geist Sans by Vercel: the UI text and the large target note and BPM numerals, rasterised into the firmware at build time (`tools/gen_font.py`) | SIL OFL 1.1 | `assets/fonts/GeistMono-Regular.ttf`, `assets/fonts/GeistSans-Regular.ttf`, `LICENSES/OFL-Geist.txt` |
 | JieLi AC79 SDK by JieLi Technology: three of its files go into every `.fwsc` package (below) | Apache-2.0 | `tools/sdk/`, `LICENSES/Apache-2.0-JieLi-SDK.txt` |
 | FM-1Ception (<https://github.com/stevexfer/FM-1Ception>), a fork of fm1-emu by Joakim Eriksson (<https://github.com/joakimeriksson/fm1-emu>): the browser emulator on the site, built by `tools/vendor_emu.sh` (the commit is in `web/emu/VERSION`) | MIT | `web/emu/`, `web/emu/LICENSE` |
 

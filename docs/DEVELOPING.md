@@ -84,7 +84,7 @@ FW_SINE[FW_SINE_N]                // int16 sine, 1024 points
 
 Drawing (`gfx.c`): `lcd_fill(x, y, w, h, color)`, `draw_text_box(x, y, w, &FONT_S, "txt", color, align)`, and for
 graphics the canvas: `cv_begin(w, h, bg)` → `cv_text / cv_rect / cv_line / cv_pset` → `cv_blit(x, y)`. The canvas is
-at most 240×124, so a screen is drawn in strips. Fonts: `FONT_S` (Geist Mono 15 px, ASCII), `FONT_L` (Geist Serif 28 px, target note + BPM digits). Colours: `RGB(r, g, b)`,
+at most 240×124, so a screen is drawn in strips. Fonts: `FONT_S` (Geist Mono 15 px, ASCII), `FONT_L` (Geist Sans 28 px, target note + BPM digits). Colours: `RGB(r, g, b)`,
 `C_BLACK C_WHITE C_HI C_GRAY C_DIM C_ACCENT`.
 
 ## Rules

@@ -10,10 +10,10 @@
 #endif
 
 #define CFG_MAGIC 0x41544E31u              /* "ATN1" */
-#define CFG_VER 2u
+#define CFG_VER 3u
 typedef struct {
     uint32_t magic, ver;
-    int32_t speed, mix, correct, oct, latch, fold, bpm, loop, mask;
+    int32_t speed, mix, correct, oct, latch, fold, bpm, loop, mask, note;
 } cfg_t;
 
 #define SAMPLE_MAX (3u * FW_FS)            /* three seconds, mono, at the codec's rate */
@@ -25,7 +25,7 @@ typedef struct {
 static const uint8_t DIV[SAMPLE_DIVS] = {1, 2, 3, 4, 8, 9, 16};   /* whole .. sixteenth; 1/3 and 1/9 as asked */
 
 static int32_t p_speed = 20, p_mix = 100, p_correct = 100, p_oct, p_bpm = 120;
-static volatile int32_t p_latch, p_mask, p_loop;
+static volatile int32_t p_latch, p_mask, p_loop, p_note;
 static int32_t p_fold = 1;
 static volatile uint32_t held;
 static uint32_t last_key, midi_held[4];
@@ -34,7 +34,7 @@ static int target_src;
 static volatile uint8_t midi_any;
 static volatile uint8_t rec, playing, rec_done;
 static volatile uint32_t s_w, s_len, s_r, s_frac, loop_pos;
-static volatile uint32_t loop_period, loop_play, sample_step = 65536u;
+static volatile uint32_t loop_period, loop_play, sample_step = 65536u, note_step = 65536u;
 static uint32_t sample_hz100, rec_hz100;
 static uint32_t loop_div = 4;
 static int clock_active;
@@ -249,6 +249,30 @@ static void record_stop(void)
         sample_finish();
 }
 
+static void sample_stop(void)
+{
+    fm1_irq_off();
+    playing = 0;
+    s_r = 0;
+    s_frac = 0;
+    loop_pos = 0;
+    fm1_irq_on();
+}
+
+/* GLO's play-note mode: each key press restarts the sample from its first frame, at that key's pitch. */
+static void sample_trigger(void)
+{
+    if (!s_len)
+        return;
+    fm1_irq_off();
+    note_step = sample_step;
+    s_r = 0;
+    s_frac = 0;
+    loop_pos = 0;
+    playing = 1;
+    fm1_irq_on();
+}
+
 static void play_toggle(void)
 {
     if (rec_done)
@@ -268,7 +292,8 @@ static void play_toggle(void)
 
 static void save_cfg(void)
 {
-    cfg_t c = {CFG_MAGIC, CFG_VER, p_speed, p_mix, p_correct, p_oct, p_latch, p_fold, p_bpm, p_loop, p_mask};
+    cfg_t c = {CFG_MAGIC, CFG_VER, p_speed, p_mix, p_correct, p_oct, p_latch, p_fold, p_bpm, p_loop, p_mask,
+               p_note};
     fw_store_save(0, &c, sizeof c);
 }
 
@@ -278,7 +303,7 @@ static void load_cfg(void)
     if (fw_store_load(0, &c, sizeof c) == 0 && c.magic == CFG_MAGIC && c.ver == CFG_VER) {
         p_speed = c.speed; p_mix = c.mix; p_correct = c.correct;
         p_oct = c.oct; p_latch = c.latch; p_fold = c.fold ? 1 : 0;
-        p_bpm = c.bpm; p_loop = c.loop; p_mask = c.mask;
+        p_bpm = c.bpm; p_loop = c.loop; p_mask = c.mask; p_note = c.note;
     }
     if (p_speed < 0) p_speed = 0;
     if (p_speed > 100) p_speed = 100;
@@ -292,6 +317,9 @@ static void load_cfg(void)
     if (p_bpm > 300) p_bpm = 300;
     p_loop = p_loop ? 1 : 0;
     p_mask = p_mask ? 1 : 0;
+    p_note = p_note ? 1 : 0;
+    if (p_note)
+        p_loop = 0;
 }
 
 /* ---- screen ---- */
@@ -550,6 +578,7 @@ static void app_frame(const fw_input_t *in)
             midi_held_set(m.d1, 1);
             set_target(m.d1);
             target_src = SRC_MIDI;
+            if (p_note) sample_trigger();
         } else if ((st == 0x80u || st == 0x90u) && m.d1 < 128u) {
             midi_held_set(m.d1, 0);
             if (!p_latch && target_src == SRC_MIDI && target == (int)m.d1)
@@ -579,6 +608,7 @@ static void app_frame(const fw_input_t *in)
             fw_led_note_key((uint32_t)k, 1);
             set_target(key_note((uint32_t)k));
             target_src = SRC_KEY;
+            if (p_note) sample_trigger();
         }
         if (up >> k & 1u) {
             held &= ~(1u << k);
@@ -612,8 +642,16 @@ static void app_frame(const fw_input_t *in)
     if (in->pressed & FW_BIT(FW_BTN_PLAY)) play_toggle();
     if (in->pressed & FW_BIT(FW_BTN_SEQ)) {
         p_loop = !p_loop;
-        playing = 0;
-        loop_pos = 0;
+        if (p_loop)
+            p_note = 0;
+        sample_stop();
+        tempo_recompute();
+    }
+    if (in->pressed & FW_BIT(FW_BTN_GLO)) {
+        p_note = !p_note;
+        if (p_note)
+            p_loop = 0;                  /* one-shot per key, not a loop */
+        sample_stop();
         tempo_recompute();
     }
     if (in->pressed & FW_BIT(FW_BTN_ARP)) p_mask = !p_mask;
@@ -628,6 +666,7 @@ static void app_frame(const fw_input_t *in)
     fw_led_button(FW_BTN_PLAY, playing);
     fw_led_button(FW_BTN_REC, rec);
     fw_led_button(FW_BTN_SEQ, p_loop);
+    fw_led_button(FW_BTN_GLO, p_note);
     fw_led_button(FW_BTN_ARP, p_mask);
     fw_led_button(FW_BTN_FX, p_latch);
     fw_led_button(FW_BTN_EDIT, p_fold);
@@ -668,6 +707,7 @@ static void app_audio(int32_t *lr, uint32_t frames)
 {
     uint32_t i;
     int32_t g1 = gain_target, step = (g1 - gain) / (int32_t)frames, g = gain;
+    uint32_t s_step = p_note ? note_step : sample_step;
     int gate = !p_mask || p_latch || target >= 0 || held || midi_any;
 
     if (!(usb_play_begin() && usb_play_read(usb_in, frames)))
@@ -704,14 +744,14 @@ static void app_audio(int32_t *lr, uint32_t frames)
                         v = a + (int32_t)(((int64_t)(b - a) * frac) >> 16);
                     }
                     loop_pos++;
-                    frac += sample_step;
+                    frac += s_step;
                     while (frac >= 65536u) { frac -= 65536u; s_r++; }
                 }
             } else if (s_r < s_len) {
                 int32_t a = sample[s_r];
                 int32_t b = s_r + 1u < s_len ? sample[s_r + 1u] : a;
                 v = a + (int32_t)(((int64_t)(b - a) * frac) >> 16);
-                frac += sample_step;
+                frac += s_step;
                 while (frac >= 65536u) { frac -= 65536u; s_r++; }
             } else {
                 playing = 0;
