@@ -280,9 +280,9 @@ static void load_cfg(void)
 #define UI_SAMPLE_W 64u
 #define UI_KNOB_Y 209u
 #define UI_MODES_X 0u
-#define UI_MODES_Y 140u
+#define UI_MODES_Y 138u
 #define UI_MODES_W 120u
-#define UI_MODES_H 44u
+#define UI_MODES_H 42u
 #define UI_REC_X 160u
 #define UI_REC_Y 135u
 #define UI_REC_W 80u
@@ -363,9 +363,9 @@ static void draw_knobs(void)
 static void draw_modes(int loop)
 {
     ui_fill(UI_MODES_X, UI_MODES_Y, UI_MODES_W, UI_MODES_H, C_BLACK);
-    ui_icon(FW_UI_REPEAT_X, FW_UI_REPEAT_Y, FW_UI_REPEAT_W, FW_UI_REPEAT_H,
+    ui_icon(FW_UI_REPEAT_X, FW_UI_REPEAT_Y - 2u, FW_UI_REPEAT_W, FW_UI_REPEAT_H,
             FW_UI_REPEAT, loop ? 255u : UI_OFF_ALPHA);
-    ui_icon(FW_UI_ONCE_X, FW_UI_ONCE_Y, FW_UI_ONCE_W, FW_UI_ONCE_H,
+    ui_icon(FW_UI_ONCE_X, FW_UI_ONCE_Y - 2u, FW_UI_ONCE_W, FW_UI_ONCE_H,
             FW_UI_ONCE, loop ? UI_OFF_ALPHA : 255u);
 }
 
