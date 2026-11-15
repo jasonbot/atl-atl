@@ -8,7 +8,7 @@
   tools/sim.py --test            host tests (flash storage) instead of a script
 
 Script lines: frames N | key K down|up | btn NAME down|up | knob NAME STEPS |
-master 0..1023 | midi STATUS D1 D2 | usbtone HZ [DBFS] (the computer plays a sine; 0 stops) |
+master 0..1023 | battery RAW | usb 0|1 | midi STATUS D1 D2 | usbtone HZ [DBFS] (the computer plays a sine; 0 stops) |
 usbrec 0|1|2 (the computer records: no stream, selected, taken) | screen PATH.ppm | wav PATH.wav | leds | quit
 PPM screens are also saved as 2x PNG when Pillow is installed.
 """

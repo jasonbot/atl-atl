@@ -36,6 +36,7 @@ static volatile uint8_t rec, playing, rec_done;
 static volatile uint32_t s_w, s_len, s_r, s_frac, loop_pos;
 static volatile uint32_t loop_period, loop_play, sample_step = 65536u, note_step = 65536u;
 static uint32_t sample_hz100, rec_hz100;
+static int sample_root_note = TARGET_NONE;
 static uint32_t loop_div = 4;
 static int clock_active;
 static uint32_t clock_ms, clock_start_ms, clock_count, clock_bpm = 120;
@@ -157,6 +158,18 @@ static void sample_step_update(void)
 
 static void set_target(int midi) { target = midi; atlatl_target(midi); sample_step_update(); }
 
+/* The sample's root note, for the SAMPLE panel. */
+static int note_for_hz100(uint32_t hz)
+{
+    int best = TARGET_NONE, n;
+    uint32_t bestd = 0xFFFFFFFFu;
+    for (n = 0; n < 128; n++) {
+        uint32_t d = absdiff(hz, (uint32_t)atlatl_note_hz100(n));
+        if (d < bestd) { bestd = d; best = n; }
+    }
+    return best;
+}
+
 static int midi_held_test(uint32_t n) { return (midi_held[n >> 5] >> (n & 31u)) & 1u; }
 
 static void midi_held_set(uint32_t n, int on)
@@ -215,6 +228,7 @@ static void sample_finish(void)
     s_len = s_w;
     sample_trim();
     sample_hz100 = rec_hz100;                    /* the recorded note is the sample's root */
+    sample_root_note = sample_hz100 ? note_for_hz100(sample_hz100) : TARGET_NONE;
     rec_done = 0;
     sample_step_update();
     tempo_recompute();
@@ -229,6 +243,7 @@ static void record_start(void)
     s_len = 0;
     sample_hz100 = 0;
     rec_hz100 = 0;
+    sample_root_note = TARGET_NONE;
     playing = 0;
     s_r = 0;
     s_frac = 0;
@@ -323,32 +338,30 @@ static void load_cfg(void)
 }
 
 /* ---- screen ---- */
-/* The UI background is assets/ui.svg, rasterized to app/ui.png at 240 x 240. The SVG's named rectangles are the
- * live text slots; the four bottom boxes keep their labels and get their values below. */
-#define UI_NOTE_X 9u
-#define UI_NOTE_Y 66u
-#define UI_NOTE_W 95u
-#define UI_PITCH_Y 103u
-#define UI_BPM_X 174u
-#define UI_BPM_Y 60u
-#define UI_BPM_W 64u
-#define UI_SAMPLE_X 174u
-#define UI_SAMPLE_Y 97u
-#define UI_SAMPLE_W 64u
-#define UI_KNOB_Y 209u
-#define UI_MODES_X 0u
-#define UI_MODES_Y 138u
-#define UI_MODES_W 140u
-#define UI_MODES_H 36u
-#define UI_REC_X 160u
-#define UI_REC_Y 135u
-#define UI_REC_W 80u
-#define UI_REC_H 35u
-#define UI_LATCH_X 199u
-#define UI_LATCH_Y 0u
-#define UI_LATCH_W 41u
-#define UI_LATCH_H 45u
-#define UI_OFF_ALPHA 13u                 /* 5% opacity: 95% transparent when a mode is off */
+/* assets/atl-atl-ui.png is the at-rest screen; atl-atl-ui-on.png has the active version of each toggle at the same coordinates. The
+ * generated macros from tools/gen_ui.py name every text box and sprite. Text is centred in its box and uses
+ * FONT_L only for the selected key and BPM. */
+#define C_UI_ON  C_BLACK
+#define C_UI_OFF RGB(203, 219, 252)      /* #cbdbfc: an inactive value */
+#define BATT_EMPTY 531u                  /* the stock FM-1 battery thresholds */
+#define BATT_FULL 591u
+
+static int battery_pct(uint32_t raw)
+{
+    if (raw <= BATT_EMPTY)
+        return 0;
+    if (raw >= BATT_FULL)
+        return 100;
+    return (int)((raw - BATT_EMPTY) * 100u / (BATT_FULL - BATT_EMPTY));
+}
+
+static void draw_toggle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *on, int active)
+{
+    if (active)
+        ui_slice(x, y, w, h, on);
+    else
+        ui_bg_rect(x, y, w, h);
+}
 
 static void draw_note(int note, int cents, int voiced)
 {
@@ -357,7 +370,8 @@ static void draw_note(int note, int cents, int voiced)
         note_name(n, target);
     else
         str_cpy(n, "---", sizeof n);
-    ui_text(UI_NOTE_X, UI_NOTE_Y, UI_NOTE_W, 36u, &FONT_L, n, target >= 0 ? C_HI : C_DIM, 1);
+    ui_text(FW_UI_KEY_X, FW_UI_KEY_Y, FW_UI_KEY_W, FW_UI_KEY_H, &FONT_L, n,
+            target >= 0 ? C_UI_ON : C_UI_OFF, 1);
     if (voiced) {
         note_name(n, note);
         b[0] = 0;
@@ -366,48 +380,65 @@ static void draw_note(int note, int cents, int voiced)
         { char c[8]; put_u(c, cents); str_cat(b, c, sizeof b); }
         str_cat(b, "c", sizeof b);
     } else {
-        str_cpy(b, "waiting", sizeof b);
+        str_cpy(b, "WAITING", sizeof b);
     }
-    ui_text(UI_NOTE_X, UI_PITCH_Y, UI_NOTE_W, 18u, &FONT_S, b, voiced ? C_GREEN : C_DIM, 1);
+    ui_text(FW_UI_AUTO_X, FW_UI_AUTO_Y, FW_UI_AUTO_W, FW_UI_AUTO_H, &FONT_S, b,
+            voiced ? C_UI_ON : C_UI_OFF, 1);
 }
 
-static void draw_bpm_mark(int tempo, int beat)
-{
-    ui_fill(108u, UI_BPM_Y, 66u, 34u, C_BLACK);
-    ui_mask(FW_UI_BPM_X, FW_UI_BPM_Y, FW_UI_BPM_W, FW_UI_BPM_H, FW_UI_BPM_MASK,
-            (!tempo || beat) ? C_WHITE : C_BPM);
-}
-
-static void draw_bpm(int bpm, int clk)
+static void draw_bpm(int bpm)
 {
     char b[16];
-    (void)clk;                         /* clock mode is shown by the BPM mark colour/beat */
     put_u(b, bpm);
-    ui_text(UI_BPM_X, UI_BPM_Y, UI_BPM_W, 34u, &FONT_L, b, C_BPM, 0);
+    ui_text(FW_UI_BPM_X, FW_UI_BPM_Y, FW_UI_BPM_W, FW_UI_BPM_H, &FONT_L, b, C_UI_ON, 1);
+}
+
+static void draw_bpm_blink(int beat)
+{
+    draw_toggle(FW_UI_BPM_BLINK_X, FW_UI_BPM_BLINK_Y, FW_UI_BPM_BLINK_W, FW_UI_BPM_BLINK_H,
+                FW_UI_ON_BPM_BLINK, beat);
 }
 
 static void draw_sample(uint32_t frames, int recording)
 {
-    char a[16], b[8];
+    char a[16], b[8], n[8];
+    uint32_t t = (frames * 10u + FW_FS / 2u) / FW_FS;
+
     if (!frames && !recording) {
-        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, "EMPTY", C_LINK, 0);
+        ui_text(FW_UI_SAMPLE_LEN_X, FW_UI_SAMPLE_LEN_Y, FW_UI_SAMPLE_LEN_W, FW_UI_SAMPLE_LEN_H,
+                &FONT_S, "EMPTY", C_UI_OFF, 1);
+        ui_text(FW_UI_SAMPLE_NOTE_X, FW_UI_SAMPLE_NOTE_Y, FW_UI_SAMPLE_NOTE_W, FW_UI_SAMPLE_NOTE_H,
+                &FONT_S, "---", C_UI_OFF, 1);
+        ui_text(FW_UI_SAMPLE_ROOT_X, FW_UI_SAMPLE_ROOT_Y, FW_UI_SAMPLE_ROOT_W, FW_UI_SAMPLE_ROOT_H,
+                &FONT_S, "---", C_UI_OFF, 1);
         return;
     }
-    {   uint32_t t = (frames * 10u + FW_FS / 2u) / FW_FS;
-        a[0] = 0;
-        { char c[8]; put_u(c, (int32_t)t / 10); str_cat(a, c, sizeof a); }
-        str_cat(a, ".", sizeof a);
-        { char c[8]; put_u(c, (int32_t)t % 10); str_cat(a, c, sizeof a); }
-        str_cat(a, "s", sizeof a);
-    }
+
+    a[0] = 0;
+    { char c[8]; put_u(c, (int32_t)t / 10); str_cat(a, c, sizeof a); }
+    str_cat(a, ".", sizeof a);
+    { char c[8]; put_u(c, (int32_t)t % 10); str_cat(a, c, sizeof a); }
+    str_cat(a, "s", sizeof a);
+    ui_text(FW_UI_SAMPLE_LEN_X, FW_UI_SAMPLE_LEN_Y, FW_UI_SAMPLE_LEN_W, FW_UI_SAMPLE_LEN_H,
+            &FONT_S, a, C_UI_ON, 1);
+
     if (recording) {
-        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 34u, &FONT_S, a, C_LINK, 0);
+        str_cpy(b, "---", sizeof b);
     } else {
         b[0] = 0;
         str_cat(b, "1/", sizeof b);
         { char c[8]; put_u(c, (int32_t)loop_div); str_cat(b, c, sizeof b); }
-        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y, UI_SAMPLE_W, 17u, &FONT_S, a, C_LINK, 0);
-        ui_text(UI_SAMPLE_X, UI_SAMPLE_Y + 17u, UI_SAMPLE_W, 17u, &FONT_S, b, C_LINK, 0);
+    }
+    ui_text(FW_UI_SAMPLE_NOTE_X, FW_UI_SAMPLE_NOTE_Y, FW_UI_SAMPLE_NOTE_W, FW_UI_SAMPLE_NOTE_H,
+            &FONT_S, b, recording ? C_UI_OFF : C_UI_ON, 1);
+
+    if (!recording && sample_root_note >= 0) {
+        note_name(n, sample_root_note);
+        ui_text(FW_UI_SAMPLE_ROOT_X, FW_UI_SAMPLE_ROOT_Y, FW_UI_SAMPLE_ROOT_W, FW_UI_SAMPLE_ROOT_H,
+                &FONT_S, n, C_UI_ON, 1);
+    } else {
+        ui_text(FW_UI_SAMPLE_ROOT_X, FW_UI_SAMPLE_ROOT_Y, FW_UI_SAMPLE_ROOT_W, FW_UI_SAMPLE_ROOT_H,
+                &FONT_S, "---", C_UI_OFF, 1);
     }
 }
 
@@ -415,79 +446,100 @@ static void draw_knobs(void)
 {
     char b[8];
     put_u(b, p_speed);
-    ui_text(7u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
+    ui_text(FW_UI_KNOB1_X, FW_UI_KNOB1_Y, FW_UI_KNOB1_W, FW_UI_KNOB1_H, &FONT_S, b, C_UI_ON, 1);
     put_u(b, p_mix);
     str_cat(b, "%", sizeof b);
-    ui_text(67u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
+    ui_text(FW_UI_KNOB2_X, FW_UI_KNOB2_Y, FW_UI_KNOB2_W, FW_UI_KNOB2_H, &FONT_S, b, C_UI_ON, 1);
     put_u(b, p_correct);
     str_cat(b, "%", sizeof b);
-    ui_text(126u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
+    ui_text(FW_UI_KNOB3_X, FW_UI_KNOB3_Y, FW_UI_KNOB3_W, FW_UI_KNOB3_H, &FONT_S, b, C_UI_ON, 1);
     put_u(b, p_oct);
-    ui_text(186u, UI_KNOB_Y, 50u, 17u, &FONT_S, b, C_BLACK, 1);
+    ui_text(FW_UI_KNOB4_X, FW_UI_KNOB4_Y, FW_UI_KNOB4_W, FW_UI_KNOB4_H, &FONT_S, b, C_UI_ON, 1);
 }
 
-static void draw_modes(int loop, int mask)
+static void draw_modes(int loop, int mask, int latch)
 {
-    ui_fill(UI_MODES_X, UI_MODES_Y, UI_MODES_W, UI_MODES_H, C_BLACK);
-    ui_icon(FW_UI_REPEAT_X, FW_UI_REPEAT_Y - 4u, FW_UI_REPEAT_W, FW_UI_REPEAT_H,
-            FW_UI_REPEAT, loop ? 255u : UI_OFF_ALPHA);
-    ui_icon(FW_UI_ONCE_X, FW_UI_ONCE_Y - 4u, FW_UI_ONCE_W, FW_UI_ONCE_H,
-            FW_UI_ONCE, loop ? UI_OFF_ALPHA : 255u);
-    ui_icon(FW_UI_MASK_X, FW_UI_MASK_Y - 4u, FW_UI_MASK_W, FW_UI_MASK_H,
-            FW_UI_MASK, mask ? 255u : UI_OFF_ALPHA);
+    draw_toggle(FW_UI_FX_X, FW_UI_FX_Y, FW_UI_FX_W, FW_UI_FX_H, FW_UI_ON_FX, latch);
+    draw_toggle(FW_UI_ARP_X, FW_UI_ARP_Y, FW_UI_ARP_W, FW_UI_ARP_H, FW_UI_ON_ARP, mask);
+    draw_toggle(FW_UI_SEQ_X, FW_UI_SEQ_Y, FW_UI_SEQ_W, FW_UI_SEQ_H, FW_UI_ON_SEQ, loop);
 }
 
 static void draw_rec(int recording)
 {
-    ui_fill(UI_REC_X, UI_REC_Y, UI_REC_W, UI_REC_H, C_BLACK);
-    if (recording)
-        ui_icon(FW_UI_REC_X, FW_UI_REC_Y, FW_UI_REC_W, FW_UI_REC_H, FW_UI_REC, 255u);
+    draw_toggle(FW_UI_REC_X, FW_UI_REC_Y, FW_UI_REC_W, FW_UI_REC_H, FW_UI_ON_REC, recording);
 }
 
-static void draw_latch(int latch)
+static void draw_glo(int note)
 {
-    ui_fill(UI_LATCH_X, UI_LATCH_Y, UI_LATCH_W, UI_LATCH_H, C_BLACK);
-    ui_icon(FW_UI_LATCH_X, FW_UI_LATCH_Y, FW_UI_LATCH_W, FW_UI_LATCH_H,
-            FW_UI_LATCH, latch ? 255u : UI_OFF_ALPHA);
+    draw_toggle(FW_UI_GLO_X, FW_UI_GLO_Y, FW_UI_GLO_W, FW_UI_GLO_H, FW_UI_ON_GLO, note);
 }
 
-static void draw_link(int play)
+static void draw_play(int playing)
 {
-    ui_fill(128u, 100u, 44u, 28u, C_BLACK);
-    ui_icon(FW_UI_LINK_X, FW_UI_LINK_Y, FW_UI_LINK_W, FW_UI_LINK_H,
-            FW_UI_LINK, play == 2 ? 255u : play ? 60u : UI_OFF_ALPHA);
+    draw_toggle(FW_UI_PLAY_X, FW_UI_PLAY_Y, FW_UI_PLAY_W, FW_UI_PLAY_H, FW_UI_ON_PLAY, playing);
 }
 
-static void draw_all(int note, int cents, int voiced, int play)
+static void draw_presence(int present)
 {
+    draw_toggle(FW_UI_SAMPLE_PRESENCE_X, FW_UI_SAMPLE_PRESENCE_Y, FW_UI_SAMPLE_PRESENCE_W,
+                FW_UI_SAMPLE_PRESENCE_H, FW_UI_ON_SAMPLE_PRESENCE, present);
+}
+
+static void draw_usb(int up)
+{
+    draw_toggle(FW_UI_USB_X, FW_UI_USB_Y, FW_UI_USB_W, FW_UI_USB_H, FW_UI_ON_USB, up);
+}
+
+static void draw_battery(uint32_t raw, int charging)
+{
+    int pct = battery_pct(raw);
+    uint32_t inner = FW_UI_BATTERY_W - 6u;
+    uint32_t w = 1u + (uint32_t)pct * (inner - 1u) / 100u;   /* 0%: the leftmost pixel column */
+    if (charging)
+        ui_slice(FW_UI_BATTERY_X, FW_UI_BATTERY_Y, FW_UI_BATTERY_W, FW_UI_BATTERY_H, FW_UI_ON_BATTERY);
+    else
+        ui_bg_rect(FW_UI_BATTERY_X, FW_UI_BATTERY_Y, FW_UI_BATTERY_W, FW_UI_BATTERY_H);
+    ui_fill(FW_UI_BATTERY_X + 3u, FW_UI_BATTERY_Y + 3u, w, FW_UI_BATTERY_H - 6u, C_BLACK);
+}
+
+static void draw_all(int note, int cents, int voiced, int play, uint32_t battery, int charging)
+{
+    int present = s_len || rec;
     ui_draw_bg();
-    draw_note(note, cents, voiced);
-    draw_knobs();
-    draw_bpm_mark(clock_active || playing, beat_on);
-    draw_bpm(tempo_now(), clock_active);
-    draw_sample(rec ? s_w : s_len, rec);
-    draw_modes(p_loop, p_mask);
+    draw_modes(p_loop, p_mask, p_latch);
     draw_rec(rec);
-    draw_latch(p_latch);
-    draw_link(play);
+    draw_glo(p_note);
+    draw_play(playing);
+    draw_presence(present);
+    draw_bpm_blink(beat_on);
+    draw_usb(play || charging);
+    draw_battery(battery, charging);
+    draw_note(note, cents, voiced);
+    draw_bpm(tempo_now());
+    draw_sample(rec ? s_w : s_len, rec);
+    draw_knobs();
 }
 
 /* Only changed slots are redrawn. The full 240 x 240 background happens once, at start. */
-static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
+static void draw_ui(int note, int cents, int voiced, int play, uint32_t battery, int charging, uint32_t now)
 {
     static int init, s_target, s_note, s_cents, s_voiced;
     static int s_speed, s_mix, s_correct, s_oct, s_bpm, s_clk;
-    static int s_loop, s_mask, s_rec, s_latch, s_play, s_tempo, s_beat;
-    static uint32_t s_frames, s_div, pitch_ms, sample_ms;
+    static int s_loop, s_mask, s_rec, s_latch, s_play, s_beat, s_charge;
+    static int s_glo, s_playing, s_pres, s_batt;
+    static uint32_t s_frames, s_div, s_root, pitch_ms, sample_ms;
     uint32_t frames = rec ? s_w : s_len;
+    int batt = battery_pct(battery);
+    int pres = s_len || rec;
     if (!init) {
-        draw_all(note, cents, voiced, play);
+        draw_all(note, cents, voiced, play, battery, charging);
         s_target = target; s_note = note; s_cents = cents; s_voiced = voiced;
         s_speed = p_speed; s_mix = p_mix; s_correct = p_correct; s_oct = p_oct;
         s_bpm = tempo_now(); s_clk = clock_active;
-        s_tempo = clock_active || playing; s_beat = beat_on;
         s_loop = p_loop; s_mask = p_mask; s_rec = rec; s_latch = p_latch;
-        s_play = play; s_frames = frames; s_div = loop_div;
+        s_play = play; s_charge = charging; s_beat = beat_on; s_batt = batt;
+        s_glo = p_note; s_playing = playing; s_pres = pres;
+        s_frames = frames; s_div = loop_div; s_root = (uint32_t)sample_root_note;
         pitch_ms = sample_ms = now; init = 1;
         return;
     }
@@ -501,34 +553,47 @@ static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
         s_speed = p_speed; s_mix = p_mix; s_correct = p_correct; s_oct = p_oct;
     }
     if (tempo_now() != s_bpm || clock_active != s_clk) {
-        draw_bpm(tempo_now(), clock_active);
+        draw_bpm(tempo_now());
         s_bpm = tempo_now(); s_clk = clock_active;
     }
-    if ((clock_active || playing) != s_tempo || beat_on != s_beat) {
-        draw_bpm_mark(clock_active || playing, beat_on);
-        s_tempo = clock_active || playing; s_beat = beat_on;
+    if (beat_on != s_beat) {
+        draw_bpm_blink(beat_on);
+        s_beat = beat_on;
     }
     if (rec != s_rec) {
         draw_rec(rec);
         draw_sample(frames, rec);
-        s_rec = rec; s_frames = frames; s_div = loop_div; sample_ms = now;
-    } else if (frames != s_frames || loop_div != s_div) {
+        s_rec = rec; s_frames = frames; s_div = loop_div;
+        s_root = (uint32_t)sample_root_note; sample_ms = now;
+    } else if (frames != s_frames || loop_div != s_div || (uint32_t)sample_root_note != s_root) {
         if (!rec || now - sample_ms >= 100u) {
             draw_sample(frames, rec);
-            s_frames = frames; s_div = loop_div; sample_ms = now;
+            s_frames = frames; s_div = loop_div; s_root = (uint32_t)sample_root_note; sample_ms = now;
         }
     }
-    if (p_loop != s_loop || p_mask != s_mask) {
-        draw_modes(p_loop, p_mask);
-        s_loop = p_loop; s_mask = p_mask;
+    if (p_loop != s_loop || p_mask != s_mask || p_latch != s_latch) {
+        draw_modes(p_loop, p_mask, p_latch);
+        s_loop = p_loop; s_mask = p_mask; s_latch = p_latch;
     }
-    if (p_latch != s_latch) {
-        draw_latch(p_latch);
-        s_latch = p_latch;
+    if (p_note != s_glo) {
+        draw_glo(p_note);
+        s_glo = p_note;
     }
-    if (play != s_play) {
-        draw_link(play);
+    if (playing != s_playing) {
+        draw_play(playing);
+        s_playing = playing;
+    }
+    if (pres != s_pres) {
+        draw_presence(pres);
+        s_pres = pres;
+    }
+    if (play != s_play || charging != s_charge) {
+        draw_usb(play || charging);
         s_play = play;
+    }
+    if (batt != s_batt || charging != s_charge) {
+        draw_battery(battery, charging);
+        s_batt = batt; s_charge = charging;
     }
 }
 
@@ -699,7 +764,7 @@ static void app_frame(const fw_input_t *in)
             rec_hz100 = (uint32_t)f0;
         if (voiced)
             note = atlatl_note(&cents);
-        draw_ui(note, cents, voiced, play, in->ms);
+        draw_ui(note, cents, voiced, play, in->battery, (int)fw_stats.usb_up, in->ms);
     }
 }
 

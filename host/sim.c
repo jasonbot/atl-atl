@@ -213,6 +213,10 @@ static int host_command(char *line)
         fm1_in.enc_steps[FW_KNOB_MATRIX[host_find(FW_KNOB_NAME, FW_KNOB_COUNT, a)]] += (int16_t)atoi(b);
     if (str_eq(cmd, "master"))
         host_adc_master = atoi(a);
+    if (str_eq(cmd, "battery"))
+        host_battery_raw = (uint32_t)atoi(a);
+    if (str_eq(cmd, "usb"))
+        fw_stats.usb_up = (uint32_t)atoi(a);
     if (str_eq(cmd, "midi"))
         host_midi((uint32_t)strtoul(a, 0, 0), (uint32_t)atoi(b), (uint32_t)atoi(c));
     if (str_eq(cmd, "screen"))
@@ -238,6 +242,7 @@ static int host_command(char *line)
 
 int main(void)
 {
+    host_battery_raw = 700;
     char line[512];
     host_wav = calloc(2u * HOST_MAX_SAMPLES, sizeof *host_wav);
     lcd_init();

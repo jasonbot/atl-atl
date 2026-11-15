@@ -38,6 +38,9 @@ FM-1 output ──► USB audio IN: the computer can record what the speaker pla
 - **Key-targeted tuning**: a held key is the target note. The input is analyzed for its fundamental, the target is
   folded to the octave nearest the singer, and a phase-synchronous granular shifter moves the input to the target.
   Releasing the keys returns to the dry signal unless **FX** latches the note.
+- **Pixel UI**: a 240×240 base screen with separate active slices for latch, mask, play, loop, recording and GLO.
+  The BPM light pulses on the beat; the battery gauge fills to its charge and uses the charging border on USB power.
+  Text is centred in the design's boxes: Geist Sans for the selected key and BPM, Geist Mono for everything else.
 - **Three-second sampler**: hold **REC** to capture the USB input unaltered (mono, at the codec rate) while the
   live tuner keeps playing. **PLAY** plays it once; **SEQ** loops it. **GLO** selects play-note mode: every physical
   or MIDI key press restarts the sample, retuned to that key, as a one-shot. GLO and SEQ are exclusive. The recorded
@@ -128,6 +131,7 @@ Host simulator:
 ```sh
 python3 tools/sim.py                         # host/atlatl.sim: 220 Hz in, C4 held
 python3 tests/sampler_test.py                # MIDI held keys, note 0, record trim, playback, GLO retrigger
+python3 tests/ui_test.py                     # pixel UI: battery fill, charging mask, toggles, beat light
 ```
 
 ## Sources and lineage

@@ -21,26 +21,26 @@
    { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }
   ],
   "slices": [
-   { "name": "sample computed note length", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 198, "y": 104, "w": 37, "h": 31 } }] },
+   { "name": "sample computed note length", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 198, "y": 104, "w": 37, "h": 30 } }] },
    { "name": "glo toggle indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 215, "y": 136, "w": 20, "h": 14 } }] },
    { "name": "Slice 18", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 179, "y": 199, "w": 55, "h": 41 } }] },
    { "name": "Slice 17", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 121, "y": 199, "w": 55, "h": 41 } }] },
    { "name": "Slice 16", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 199, "w": 54, "h": 41 } }] },
    { "name": "Slice 15", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 5, "y": 199, "w": 55, "h": 41 } }] },
-   { "name": "sample length text", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 143, "y": 89, "w": 54, "h": 46 } }] },
-   { "name": "rec indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 143, "y": 135, "w": 35, "h": 13 } }] },
-   { "name": "sample presence indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 208, "y": 89, "w": 27, "h": 14 } }] },
+   { "name": "sample length text", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 143, "y": 89, "w": 54, "h": 45 } }] },
+   { "name": "rec indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 143, "y": 135, "w": 35, "h": 14 } }] },
+   { "name": "sample presence indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 211, "y": 89, "w": 24, "h": 14 } }] },
    { "name": "Slice 11", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 143, "y": 151, "w": 92, "h": 31 } }] },
    { "name": "seq toggle", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 107, "y": 165, "w": 27, "h": 15 } }] },
    { "name": "play indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 107, "y": 150, "w": 27, "h": 14 } }] },
    { "name": "bpm text", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 25, "y": 151, "w": 50, "h": 29 } }] },
    { "name": "bpm blink", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 11, "y": 160, "w": 12, "h": 12 } }] },
-   { "name": "battery indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 218, "y": 3, "w": 18, "h": 11 } }] },
+   { "name": "battery indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 218, "y": 3, "w": 19, "h": 11 } }] },
    { "name": "usb indicator", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 193, "y": 3, "w": 17, "h": 11 } }] },
-   { "name": "arp toggle", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 168, "y": 51, "w": 67, "h": 19 } }] },
+   { "name": "arp toggle", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 168, "y": 52, "w": 67, "h": 19 } }] },
    { "name": "fx toggle", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 168, "y": 33, "w": 67, "h": 18 } }] },
-   { "name": "autotune message", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 7, "y": 95, "w": 126, "h": 34 } }] },
-   { "name": "selected key text", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 7, "y": 34, "w": 126, "h": 60 } }] }
+   { "name": "autotune message", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 6, "y": 95, "w": 127, "h": 34 } }] },
+   { "name": "selected key text", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 6, "y": 34, "w": 127, "h": 60 } }] }
   ]
  }
 }

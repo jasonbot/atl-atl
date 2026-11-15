@@ -100,11 +100,12 @@ static void fm1_led_key(uint32_t id, int on)
         host_leds &= ~((uint64_t)1 << id);
 }
 
+static uint32_t host_battery_raw;
 static int32_t fm1_adc_read(uint32_t ch)
 {
     if (ch == FM1_ADC_MASTER)
         return host_adc_master;
-    return 700;
+    return (int32_t)host_battery_raw;
 }
 
 static uint32_t midi_in_q[MQ], midi_out_q[MQ];

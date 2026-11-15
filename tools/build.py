@@ -224,7 +224,7 @@ def generate():
     cmds = [[tools / "gen_font.py", GEN / "felucca_font.h"],
             [tools / "gen_tables.py", GEN / "fw_tables.h", "48" if FS48 else "44"],
             [tools / "gen_logo.py", GEN / "fw_logo.h", app_dir() / "logo.png", "--preview", GEN / "logo.png"],
-            [tools / "gen_ui.py", GEN / "fw_ui.h", app_dir() / "ui.png", "--preview", GEN / "ui.png"]]
+            [tools / "gen_ui.py", GEN / "fw_ui.h", SRC / "assets" / "atl-atl-ui.png", "--on", SRC / "assets" / "atl-atl-ui-on.png", "--slices", SRC / "assets" / "atl-atl-ui.json", "--preview", GEN / "ui.png"]]
     procs = [subprocess.Popen([sys.executable, *map(str, c)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True) for c in cmds]
     failed = []

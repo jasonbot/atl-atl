@@ -247,35 +247,23 @@ static void ui_fill(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t c)
     lcd_sync();
 }
 
-static uint16_t ui_fade(uint16_t c, uint8_t a)
+/* Copy a rectangle of the base image back, then draw the active slice over it. */
+static void ui_bg_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
-    uint32_t r = (c >> 11) * a / 255u;
-    uint32_t g = ((c >> 5) & 63u) * a / 255u;
-    uint32_t b = (c & 31u) * a / 255u;
-    return (uint16_t)((r << 11) | (g << 5) | b);
-}
-
-/* A live icon cropped from the SVG raster: alpha 0..255, black where the icon is empty. */
-static void ui_icon(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *icon, uint8_t alpha)
-{
-    uint32_t i;
-    cv_begin(w, h, C_BLACK);
-    for (i = 0; i < w * h; i++)
-        if (icon[i])
-            cv_px[i] = swap16(ui_fade(icon[i], alpha));
+    ui_pixels(x, y, w, h);
     cv_blit(x, y);
     lcd_sync();
 }
 
-/* The same, but the shape is an alpha mask and the caller picks its colour. */
-static void ui_mask(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint8_t *mask, uint16_t c)
+/* A full, opaque slice from the on image. Black is a real colour here, not transparency. */
+static void ui_slice(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *sprite)
 {
     uint32_t i;
     cv_begin(w, h, C_BLACK);
     for (i = 0; i < w * h; i++)
-        if (mask[i])
-            cv_px[i] = swap16(ui_fade(c, mask[i]));
+        cv_px[i] = swap16(sprite[i]);
     cv_blit(x, y);
     lcd_sync();
 }
+
 #endif
