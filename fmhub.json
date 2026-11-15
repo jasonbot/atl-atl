@@ -5,5 +5,6 @@
     "other"
   ],
   "image": "docs/card.png",
-  "color": "#ABCD37"
+  "color": "#ABCD37",
+  "play": "https://www.jasonscheirer.com/atl-atl/emu/"
 }
