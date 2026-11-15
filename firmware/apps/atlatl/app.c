@@ -38,6 +38,8 @@ static volatile uint32_t loop_period, loop_play;
 static uint32_t loop_div = 4;
 static int clock_active;
 static uint32_t clock_ms, clock_start_ms, clock_count, clock_bpm = 120;
+static uint8_t beat_on;
+static uint32_t beat_next_ms, beat_clocks;
 static int32_t gain_target, gain;
 static int16_t usb_in[2u * FW_BLOCK];
 FW_POOL static int16_t sample[SAMPLE_MAX];
@@ -110,10 +112,16 @@ static void clock_tick(uint32_t ms)
         clock_active = 1;
         clock_start_ms = ms;
         clock_count = 0;
+        beat_clocks = 0;
+        beat_on = 0;
     }
     if (!clock_count)
         clock_start_ms = ms;
     clock_count++;
+    if (++beat_clocks >= 24u) {
+        beat_clocks = 0;
+        beat_on = !beat_on;
+    }
     clock_ms = ms;
     span = ms - clock_start_ms;
     if (span >= 500u) {
@@ -314,6 +322,13 @@ static void draw_note(int note, int cents, int voiced)
     ui_text(UI_NOTE_X, UI_PITCH_Y, UI_NOTE_W, 18u, &FONT_S, b, voiced ? C_GREEN : C_DIM, 1);
 }
 
+static void draw_bpm_mark(int tempo, int beat)
+{
+    ui_fill(108u, UI_BPM_Y, 66u, 34u, C_BLACK);
+    ui_mask(FW_UI_BPM_X, FW_UI_BPM_Y, FW_UI_BPM_W, FW_UI_BPM_H, FW_UI_BPM_MASK,
+            (!tempo || beat) ? C_WHITE : C_BPM);
+}
+
 static void draw_bpm(int bpm, int clk)
 {
     char b[16];
@@ -399,6 +414,7 @@ static void draw_all(int note, int cents, int voiced, int play)
     ui_draw_bg();
     draw_note(note, cents, voiced);
     draw_knobs();
+    draw_bpm_mark(clock_active || playing, beat_on);
     draw_bpm(tempo_now(), clock_active);
     draw_sample(rec ? s_w : s_len, rec);
     draw_modes(p_loop, p_mask);
@@ -412,7 +428,7 @@ static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
 {
     static int init, s_target, s_note, s_cents, s_voiced;
     static int s_speed, s_mix, s_correct, s_oct, s_bpm, s_clk;
-    static int s_loop, s_mask, s_rec, s_latch, s_play;
+    static int s_loop, s_mask, s_rec, s_latch, s_play, s_tempo, s_beat;
     static uint32_t s_frames, s_div, pitch_ms, sample_ms;
     uint32_t frames = rec ? s_w : s_len;
     if (!init) {
@@ -420,6 +436,7 @@ static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
         s_target = target; s_note = note; s_cents = cents; s_voiced = voiced;
         s_speed = p_speed; s_mix = p_mix; s_correct = p_correct; s_oct = p_oct;
         s_bpm = tempo_now(); s_clk = clock_active;
+        s_tempo = clock_active || playing; s_beat = beat_on;
         s_loop = p_loop; s_mask = p_mask; s_rec = rec; s_latch = p_latch;
         s_play = play; s_frames = frames; s_div = loop_div;
         pitch_ms = sample_ms = now; init = 1;
@@ -437,6 +454,10 @@ static void draw_ui(int note, int cents, int voiced, int play, uint32_t now)
     if (tempo_now() != s_bpm || clock_active != s_clk) {
         draw_bpm(tempo_now(), clock_active);
         s_bpm = tempo_now(); s_clk = clock_active;
+    }
+    if ((clock_active || playing) != s_tempo || beat_on != s_beat) {
+        draw_bpm_mark(clock_active || playing, beat_on);
+        s_tempo = clock_active || playing; s_beat = beat_on;
     }
     if (rec != s_rec) {
         draw_rec(rec);
@@ -489,11 +510,17 @@ static void app_frame(const fw_input_t *in)
             clock_start_ms = in->ms;
             clock_count = 0;
             clock_ms = in->ms;
+            beat_clocks = 0;
+            beat_on = 0;
+            beat_next_ms = 0;
             tempo_recompute();
             continue;
         }
         if (m.status == 0xFCu) {
             clock_active = 0;
+            beat_clocks = 0;
+            beat_on = 0;
+            beat_next_ms = 0;
             tempo_recompute();
             continue;
         }
@@ -518,6 +545,9 @@ static void app_frame(const fw_input_t *in)
     }
     if (clock_active && in->ms - clock_ms > 1500u) {
         clock_active = 0;
+        beat_clocks = 0;
+        beat_on = 0;
+        beat_next_ms = 0;
         tempo_recompute();
     }
 
@@ -576,6 +606,27 @@ static void app_frame(const fw_input_t *in)
     fw_led_button(FW_BTN_ARP, p_mask);
     fw_led_button(FW_BTN_FX, p_latch);
     fw_led_button(FW_BTN_EDIT, p_fold);
+
+    {
+        uint32_t now = in->ms;
+        if (playing && !clock_active) {
+            uint32_t interval = 60000u / (uint32_t)tempo_now();
+            if (!beat_next_ms) {
+                beat_on = 0;
+                beat_next_ms = now + interval;
+            } else if ((int32_t)(now - beat_next_ms) >= 0) {
+                beat_on = !beat_on;
+                beat_next_ms += interval;
+                if ((int32_t)(now - beat_next_ms) >= 0)
+                    beat_next_ms = now + interval;
+            }
+        } else if (!clock_active) {
+            beat_next_ms = 0;
+            beat_on = 0;
+        } else {
+            beat_next_ms = 0;
+        }
+    }
 
     {
         int f0, ratio, voiced, clarity, note = 0, cents = 0;

@@ -261,4 +261,16 @@ static void ui_icon(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16
     cv_blit(x, y);
     lcd_sync();
 }
+
+/* The same, but the shape is an alpha mask and the caller picks its colour. */
+static void ui_mask(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint8_t *mask, uint16_t c)
+{
+    uint32_t i;
+    cv_begin(w, h, C_BLACK);
+    for (i = 0; i < w * h; i++)
+        if (mask[i])
+            cv_px[i] = swap16(ui_fade(c, mask[i]));
+    cv_blit(x, y);
+    lcd_sync();
+}
 #endif

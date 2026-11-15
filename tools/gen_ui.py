@@ -15,6 +15,7 @@ SIDE = 240
 ICONS = (("REPEAT", (17, 145, 48, 162)), ("ONCE", (61, 145, 90, 164)),
          ("MASK", (103, 147, 133, 163)), ("REC", (170, 145, 228, 162)),
          ("LATCH", (203, 7, 235, 38)), ("LINK", (131, 104, 170, 124)))
+MONO = (("BPM", (110, 66, 170, 90)),)
 
 
 def rgb565(r, g, b):
@@ -59,6 +60,16 @@ def main():
         text += (f"#define FW_UI_{name}_X {x0}u\n#define FW_UI_{name}_Y {y0}u\n"
                  f"#define FW_UI_{name}_W {x1 - x0}u\n#define FW_UI_{name}_H {y1 - y0}u\n"
                  f"static const uint16_t FW_UI_{name}[{len(icon)}] = {{\n{rows(icon, 12, '0x%04X')}\n}};\n")
+    for name, (x0, y0, x1, y1) in MONO:
+        crop = im.crop((x0, y0, x1, y1))
+        icon = []
+        for y in range(y1 - y0):
+            for x in range(x1 - x0):
+                r, g, b = crop.getpixel((x, y))
+                icon.append(max(r, g, b))
+        text += (f"#define FW_UI_{name}_X {x0}u\n#define FW_UI_{name}_Y {y0}u\n"
+                 f"#define FW_UI_{name}_W {x1 - x0}u\n#define FW_UI_{name}_H {y1 - y0}u\n"
+                 f"static const uint8_t FW_UI_{name}_MASK[{len(icon)}] = {{\n{rows(icon, 24, '%d')}\n}};\n")
     a.out.write_text(text)
     if a.preview:
         q.convert("RGB").save(a.preview)
