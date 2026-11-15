@@ -399,6 +399,16 @@ static void draw_bpm_blink(int beat)
                 FW_UI_ON_BPM_BLINK, beat);
 }
 
+/* The sample length is the one large value outside the TUNE panel. The small "s" keeps the
+ * unit without making "0.4s" wider than the 54 px box. */
+static void draw_sample_length(const char *value)
+{
+    ui_text(FW_UI_SAMPLE_LEN_X, FW_UI_SAMPLE_LEN_Y, FW_UI_SAMPLE_LEN_W - 10u, FW_UI_SAMPLE_LEN_H,
+            &FONT_L, value, C_UI_ON, 1);
+    ui_text(FW_UI_SAMPLE_LEN_X + FW_UI_SAMPLE_LEN_W - 10u, FW_UI_SAMPLE_LEN_Y, 10u, FW_UI_SAMPLE_LEN_H,
+            &FONT_S, "s", C_UI_ON, 1);
+}
+
 static void draw_sample(uint32_t frames, int recording)
 {
     char a[16], b[8], n[8];
@@ -418,9 +428,7 @@ static void draw_sample(uint32_t frames, int recording)
     { char c[8]; put_u(c, (int32_t)t / 10); str_cat(a, c, sizeof a); }
     str_cat(a, ".", sizeof a);
     { char c[8]; put_u(c, (int32_t)t % 10); str_cat(a, c, sizeof a); }
-    str_cat(a, "s", sizeof a);
-    ui_text(FW_UI_SAMPLE_LEN_X, FW_UI_SAMPLE_LEN_Y, FW_UI_SAMPLE_LEN_W, FW_UI_SAMPLE_LEN_H,
-            &FONT_S, a, C_UI_ON, 1);
+    draw_sample_length(a);
 
     if (recording) {
         str_cpy(b, "---", sizeof b);
@@ -493,7 +501,7 @@ static void draw_usb(int up)
 static void draw_battery(uint32_t raw, int charging)
 {
     int pct = battery_pct(raw);
-    uint32_t inner = FW_UI_BATTERY_W - 6u;
+    uint32_t inner = FW_UI_BATTERY_W - 8u;   /* 3 px left, 5 px right */
     uint32_t w = 1u + (uint32_t)pct * (inner - 1u) / 100u;   /* 0%: the leftmost pixel column */
     if (charging)
         ui_slice(FW_UI_BATTERY_X, FW_UI_BATTERY_Y, FW_UI_BATTERY_W, FW_UI_BATTERY_H, FW_UI_ON_BATTERY);

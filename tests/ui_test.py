@@ -101,7 +101,7 @@ screen {OUT}/batterycharge.ppm
     img = read_ppm(OUT / "battery100.ppm")
     full = black(img, bx + 3, by + 3, bx + bw - 3, by + bh - 3)
     assert empty == bh - 6, f"0% battery fill: {empty} black pixels"
-    assert full == (bw - 6) * (bh - 6), f"100% battery fill: {full} black pixels"
+    assert full == (bw - 8) * (bh - 6), f"100% battery fill: {full} black pixels"
     img = read_ppm(OUT / "batterycharge.ppm")
     assert green(img, bx, by, bx + bw, by + bh), "charging battery mask was not drawn"
 
